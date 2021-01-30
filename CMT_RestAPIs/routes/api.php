@@ -19,9 +19,32 @@ use Illuminate\Support\Facades\Route;
 // });
 
 //LoginPage @ UserController
+
 Route::post('register', 'App\Http\Controllers\UserController@register');
 
 Route::post('login', 'App\Http\Controllers\UserController@login');
 
 Route::get('profile', 'App\Http\Controllers\UserController@getAuthenticatedUser');
+
+Route::post('recover', 'App\Http\Controllers\UserController@recover');
+
+Route::group(['middleware' => ['jwt.auth']], function() {
+    Route::get('logout', 'App\Http\Controllers\UserController@logout');
+    Route::get('test', function(){
+        return response()->json(['foo'=>'bar']);
+    });
+});
+
+//Email check using Ajax 
+
+//Route::post('/checkemail', 'App\Http\Controllers\UserController@checkemail')->middleware('ajax');
+Route::post('checkemail', 'App\Http\Controllers\UserController@checkemail');
+
+//IRF @ IrfController
+
+Route::post('irf_register', 'App\Http\Controllers\IrfController@irf_register');
+
+Route::GET('irf_search', 'App\Http\Controllers\IrfController@irf_search');
+
+Route::put('irf_update/{user_id}', 'App\Http\Controllers\IrfController@irf_update');
 

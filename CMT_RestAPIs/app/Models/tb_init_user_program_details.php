@@ -13,9 +13,12 @@ class tb_init_user_program_details extends Model
      *
      * @var array
      */
+
+    protected $table = 'tb_init_user_program_details';
+
     protected $fillable = [
         'programName',
         'category',
-        
+        'userId',
     ];
 }

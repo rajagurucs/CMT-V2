@@ -13,6 +13,9 @@ class tb_init_user_extra_details extends Model
      *
      * @var array
      */
+
+    protected $table = 'tb_init_user_extra_details';
+
     protected $fillable = [
         'myHealth',
         'myLifeSatisfaction',
@@ -29,6 +32,7 @@ class tb_init_user_extra_details extends Model
         'myCmtProgramAwareness',
         'myPhysicalActiveness',
         'cmtAgent',
+        'userId',
         
     ];
 }

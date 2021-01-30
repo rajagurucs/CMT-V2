@@ -15,7 +15,7 @@ class CreateTbChildDetailsTable extends Migration
     {
         Schema::create('tb_child_details', function (Blueprint $table) {
             //$table->id(); 
-            $table->bigIncrements('childId');            
+            $table->Increments('id')->unique();             
             $table->string('childFirstname');
             $table->string('childLastname');
             $table->string('childDob');            

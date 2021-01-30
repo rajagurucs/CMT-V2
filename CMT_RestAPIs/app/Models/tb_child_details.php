@@ -13,6 +13,9 @@ class tb_child_details extends Model
      *
      * @var array
      */
+    
+    protected $table = 'tb_child_details';
+
     protected $fillable = [
         'childFirstname',
         'childLastname',

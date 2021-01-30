@@ -10,7 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable  implements JWTSubject, MustVerifyEmail
+class User extends Authenticatable  implements JWTSubject
 {
     use HasFactory, Notifiable;
 
@@ -33,6 +33,7 @@ class User extends Authenticatable  implements JWTSubject, MustVerifyEmail
         'province',
         'city',
         'postal',
+        'IsActive',
 ];
 
     /**
@@ -66,8 +67,5 @@ class User extends Authenticatable  implements JWTSubject, MustVerifyEmail
     {
         return [];
     }
-    public function sendEmailVerificationNotification()
-    {
-        $this->notify(new VerifyEmail); // my notification
-    }
+    
 }
