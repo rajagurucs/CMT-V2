@@ -44,7 +44,13 @@ Route::post('checkemail', 'App\Http\Controllers\UserController@checkemail');
 
 Route::post('irf_register', 'App\Http\Controllers\IrfController@irf_register');
 
-Route::GET('irf_search', 'App\Http\Controllers\IrfController@irf_search');
+Route::GET('irf_search/{data}', 'App\Http\Controllers\IrfController@irf_search');
 
-Route::put('irf_update/{user_id}', 'App\Http\Controllers\IrfController@irf_update');
+Route::PUT('irf_userUpdate', 'App\Http\Controllers\IrfController@irf_userUpdate');
+
+Route::post('irf_programUpdate', 'App\Http\Controllers\IrfController@irf_programUpdate');
+
+Route::post('irf_addGoals', 'App\Http\Controllers\IrfController@irf_addGoals');
+
+//Route::put('irf_update/{user_id}', 'App\Http\Controllers\IrfController@irf_update');
 
