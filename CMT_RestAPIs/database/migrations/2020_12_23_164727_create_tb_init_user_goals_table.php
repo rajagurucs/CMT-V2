@@ -16,18 +16,18 @@ class CreateTbInitUserGoalsTable extends Migration
         Schema::create('tb_init_user_goals', function (Blueprint $table) {
             
             $table->bigIncrements('tb_user_details_goals_update_id');  
-            $table->string('goalId');          
+            //$table->string('goalId');          
             $table->string('user_goal_category_name');
             $table->string('user_goal_program_name');
             $table->string('user_goal_program_location');
             $table->string('user_goal_program_instructor');
-            $table->string('user_goal_program_startdate');
-            $table->string('user_goal_program_enddate');
-            $table->string('user_goal_program_participantcomments');
-            $table->string('user_goal_program_additionalcomments');
+            $table->date('user_goal_program_startdate');
+            $table->date('user_goal_program_enddate');
+            $table->string('user_goal_program_participantcomments')->nullable();
+            $table->string('user_goal_program_additionalcomments')->nullable();
             $table->string('user_goal_program_status');
             $table->string('user_goal_program_RatingBefore');
-            $table->string('user_goal_program_RatingAfter');
+            $table->string('user_goal_program_RatingAfter')->nullable();
             $table->timestamps();
            
             $table->bigInteger('userId')->unsigned()->index();

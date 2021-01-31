@@ -28,8 +28,7 @@ class IrfController extends BaseController
 
     public function irf_register(Request $request)
     {
-        $validator = Validator::make($request->json()->all() , 
-        [
+        $validator = Validator::make($request->json()->all() , [
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'streetAddress' => 'required|string|max:255',
@@ -40,7 +39,7 @@ class IrfController extends BaseController
             'country' => 'required|string|max:255',
             'zipCode' => 'required|string|max:255',
             'phoneCell' => 'required|string|max:255',
-            'email' => 'required|string|max:255',
+            'email' => 'required|email|unique:tb_init_user_details,email|max:255',
             'firstLang' => 'required|string|max:255',
             'EmerContactName' => 'required|string|max:255',
             'EmerContactNo' => 'required|string|max:255',
@@ -70,9 +69,10 @@ class IrfController extends BaseController
 
             DB::beginTransaction();
 
-        try
-        {
-             $user = tb_init_user_details::create([
+        try{
+            
+
+        $user = tb_init_user_details::create([
             'firstName' => $request->json()->get('firstName'),
             'middleName' => $request->json()->get('middleName'),
             'lastName' => $request->json()->get('lastName'),
@@ -93,7 +93,7 @@ class IrfController extends BaseController
             'aboutUs' => $request->json()->get('aboutUs'),
             'ChildValue' => $request->json()->get('ChildValue'),
             'notes' => $request->json()->get('notes')            
-            ]);
+        ]);
 
                 $ChildDetails = $request->json()->get('child_program');
                 
@@ -108,7 +108,9 @@ class IrfController extends BaseController
                 }
               //    Link::insert($data2);
             
-               // return response($data2, 200);                
+               // return response($data2, 200);
+
+                
 
                $Programs = $request->json()->get('userprograms');
               
@@ -120,8 +122,8 @@ class IrfController extends BaseController
                                 if($checker2 == 'true')
                                     { 
                                         $data3 = new tb_init_user_program_details();
-                                        $data3->programName = $key;
-                                        $data3->category = $val['value'];
+                                        $data3->programName = $val['value'];
+                                        $data3->category = $key;
                                         $data3->userId = $user->id;
                                         $data3->save();
                                     }
@@ -145,8 +147,8 @@ class IrfController extends BaseController
                if(!empty($other)) 
                {
                 $data5 = new tb_init_user_program_details();
-                $data5->programName = "Other";
-                $data5->category = $other;
+                $data5->programName = $other;
+                $data5->category = "Other";
                 $data5->userId = $user->id;
                 $data5->save();
                }
@@ -174,15 +176,17 @@ class IrfController extends BaseController
 
             } catch (Exception $e) {
         
-                Log::warning(sprintf('Exception: %s', $e->getMessage()));
+              //  Log::warning(sprintf('Exception: %s', $e->getMessage()));
         
                 DB::rollBack();
             }
                //Creating Array for Response
              
-               $display = $user->id;  
-               //return response($display, 200);
-               return response()->json(['id' => $display], 400);
+               $display = $user->id; 
+                return response()->json([
+                    'success'=> true,
+                    'id' => $display
+                    ]);
     }
     // public function irf_search(Request $request)
     //  {
@@ -201,36 +205,37 @@ class IrfController extends BaseController
 
     public function irf_search($data)
     {
-        //  $userId = $request->json()->get('userId');
+      //  $userId = $request->json()->get('userId');
 
-        // $photos = tb_init_user_detail::all();
-        //return response($photos, 200);
+     // $photos = tb_init_user_details::all();
+      //return response($photos, 200);
         
-        // $user =  tb_init_user_detail::where('userId', $userId)->first();
-        //$data = $request->json()->get('data');
+       // $user =  tb_init_user_details::where('userId', $userId)->first();
+       //$data = $request->json()->get('data');
 
       // $data = $request->input('data', false);
 
-       $search_users = tb_init_user_details::where('userId',$data)
-                                           ->orwhere('email',$data)
-                                           ->first();
-                                          
+      $search_users = tb_init_user_details::where('userId',$data)
+      ->orwhere('email',$data)
+      ->first();
+     
         //Checking whether the User Query returns value             
-         if(is_null($search_users)) 
+        if(is_null($search_users)) 
         {
-            //return response("User Does Not Exist",200);
-            return response()->json(['success'=> false,
-                                    'message'=>'User Does Not Exist'], 200);                                     
+            return response()->json([
+                                    'success'=> false,
+                                    'message'=>'User Does Not Exist']);
         }
+
         else
         {
-            //Storing the result in a Array
-            $resultArr = $search_users->toArray();
+        //Storing the result in a Array
+        $resultArr = $search_users->toArray();
         }       
-       
+
         //Getting the User Id from the Query
         $id = $resultArr['userId'];
-        
+
         //Searching Child Details
         $search_child = tb_child_details::where('parentId',$id)->get();
 
@@ -238,21 +243,29 @@ class IrfController extends BaseController
 
         //Counting the rows returned
         // $ChildCount = count($search_child );
-        
+
+
         $ProgramDetails = tb_init_user_program_details::where('userId',$id)->get();
+
 
         $HealthDetails = tb_init_user_extra_details::where('userId',$id)->get();
 
-        //$GoalDetails = tb_init_user_goals::where('userId',$id);
+
+        $GoalDetails = tb_init_user_goals::where('userId',$id)->get();
 
         // //Creating Array for Response
         $search['User_Details'] = $search_users;
         $search['Child_Details'] = $search_child;
+        $search['GoalDetails'] = $GoalDetails;
         $search['Program_Details'] = $ProgramDetails;
         $search['Health_Details'] = $HealthDetails;
-                  
-       // return response($search,200);
-        return response()->json($search, 200);
+
+        //return response($search,200);
+        //return response()->json($search, 200);
+        return response()->json([
+                                'success'=> true,
+                                'data'=>$search
+                                ]);
     }
 
     public function irf_userUpdate(Request $request)
@@ -302,7 +315,7 @@ class IrfController extends BaseController
             'EmerContactNo' => $request->json()->get('EmerContactNo'),
             'notes' => $request->json()->get('notes')            
         ]);
-            return response()->json(['message'=> 'User Updated']);
+            return response()->json(['success'=> true,'message'=> 'User Updated']);
     }
 
     public function irf_programUpdate(Request $request)
@@ -319,66 +332,72 @@ class IrfController extends BaseController
                           if($checker2 == 'true')
                              { 
                                $data= tb_init_user_program_details::where('userId', $id)
-                                                                    ->where('category',$val['value'])
+                                                                    ->where('programName',$val['value'])
                                                                     ->first(); 
                                 if(is_null($data))
                                     {
                                         $data3= tb_init_user_program_details::upsert([
-                                        'programName' => $key,
-                                        'category' => $val['value'],
+                                        'programName' => $val['value'],
+                                        'category' => $key,
                                         'userId' => $id],'userId',['programName','category','userId']);        
                                     }
                                 }
                             else
                             {
-                                DB::table('tb_init_user_program_details')->where('userId', $id)
-                                                                        -> where('category', $val['value'])
+                             
+                                        DB::table('tb_init_user_program_details')->where('userId', $id)
+                                                                        -> where('programName', $val['value'])
                                                                         ->delete();
+                                             
                             }                                        
-                        }
-                    }
-                    $Afterschool = $request->json()->get('after_school_program');
-                    $data1= tb_init_user_program_details::where('userId', $id)
+                     }
+                     
+        }
+
+        $Afterschool = $request->json()->get('after_school_program');
+
+        $data1= tb_init_user_program_details::where('userId', $id)
                                         ->where('programName','AfterSchool')
-                                        ->first();                                                   
-                    if($Afterschool == 'no' and !empty($data1))
-                    {
-                        DB::table('tb_init_user_program_details')->where('userId', $id)
+                                        ->first();
+                                                   
+        if($Afterschool == 'no' and !empty($data1))
+            {
+                DB::table('tb_init_user_program_details')->where('userId', $id)
                                             ->where('programName','AfterSchool')
                                             ->delete();
-                    }
-                    else if($Afterschool == 'yes' and is_null($data1))
-                    {
-                        $data4 = new tb_init_user_program_details();
-                        $data4->programName = "AfterSchool";
-                        $data4->category = "AfterSchool";
-                        $data4->userId = $id;
-                        $data4->save();
-                    }
+            }
+        else if($Afterschool == 'yes' and is_null($data1))
+            {
+                $data4 = new tb_init_user_program_details();
+                $data4->programName = "AfterSchool";
+                $data4->category = "AfterSchool";
+                $data4->userId = $id;
+                $data4->save();
+            }
         
-                    $other = $request->json()->get('Others');
+        $other = $request->json()->get('Others');
             
-                    $data5= tb_init_user_program_details::where('userId', $id)
-                                                        ->where('programName','Other')
-                                                        ->first();
+        $data5= tb_init_user_program_details::where('userId', $id)
+            ->where('category','Other')
+            ->first();
 
-                    if(is_null($data5))
-                     {
-                      $data6 = tb_init_user_program_details::upsert([
-                        'programName' => "Other",
-                        'category' => $other,
+        if(is_null($data5))
+            {
+                $data6 = tb_init_user_program_details::upsert([
+                        'programName' => $other,
+                        'category' => "Other",
                         'userId' => $id],'userId',['programName','category','userId']);
-                      }
-                      else
-                      {
-                        $data6=tb_init_user_program_details::where('userId',$id)
-                                                ->where('programName','Other')
+            }
+            else
+            {
+                $data6=tb_init_user_program_details::where('userId',$id)
+                                                ->where('category','Other')
                                                 ->update([
                                                     'programName' => "Other",
                                                     'category' => $other,
                                                     'userId' => $id]);
-                      }
-                      return response()->json(['message'=> 'User Program Updated']);
+            }
+                return response()->json(['success'=> true,'message'=> 'User Program Updated']);
                  
     }
 
@@ -402,54 +421,169 @@ class IrfController extends BaseController
          
      }
 
-     public function irf_addGoals(Request $request)
+     public function irf_addGoal(Request $request)
      {
-         //$getdata = $request->get('getdata');
-         
-         $validator = Validator::make($request->json()->all() , [
-            'user_goal_category_name' => 'required|string|max:255',
-            'user_goal_program_name' => 'required|string|max:255',
-            'user_goal_program_location' => 'required|string|max:255',
-            'user_goal_program_instructor' => 'required|string|max:255',
-            'user_goal_program_startdate' => 'required|string|max:255',
-            'user_goal_program_enddate' => 'required|string|max:255',
-            'user_goal_program_participantcomments' => 'required|string|max:255',
-            'user_goal_program_additionalcomments' => 'required|string|max:255',
-            'user_goal_program_status' => 'required|string|max:255',
-            'user_goal_program_RatingBefore' => 'required|string|max:255',
-            'user_goal_program_RatingAfter' => 'required|string|max:255',
+        $validator = Validator::make($request->json()->all() , [
+            'CategoryName' => 'required|string|max:255',
+            'ProgramName' => 'required|string|max:255',
+            'Location' => 'required|string|max:255',
+            'Instructor' => 'required|string|max:255',
+            'StartDate' => 'required|date_format:Y/m/d',
+            'EndDate' => 'required|date_format:Y/m/d',
+            'Status' => 'required|string|max:255',
+            'RatingBefore' => 'required|string|max:255',
+          
         ]);
 
         if($validator->fails())
-        {
-            return response()->json($validator->errors()->toJson(), 400);
-        } 
+            {
+                return response()->json($validator->errors()->toJson(), 400);
+            } 
+
+        $user = tb_init_user_goals::create([
+            'user_goal_category_name' => $request->json()->get('CategoryName'),
+            'user_goal_program_name' => $request->json()->get('ProgramName'),
+            'user_goal_program_location' => $request->json()->get('Location'),
+            'user_goal_program_instructor' => $request->json()->get('Instructor'),
+            'user_goal_program_startdate' => $request->json()->get('StartDate'),
+            'user_goal_program_enddate' => $request->json()->get('EndDate'),
+            'user_goal_program_status' => $request->json()->get('Status'),
+            'user_goal_program_participantcomments' => $request->json()->get('ParticipantComments'),
+            'user_goal_program_additionalcomments' => $request->json()->get('AdditionalComments'),
+            'user_goal_program_RatingBefore' => $request->json()->get('RatingBefore'),
+            'user_goal_program_RatingAfter' => $request->json()->get('RatingAfter'),
+            'userId' => $request->json()->get('userId')            
+        ]);
+         
+              // return response("Goals Added", 200);
+               return response()->json(['success'=> True,'message'=> 'User Goals Added']);
+    }
+
+    public function irf_updateGoal(Request $request)
+    {
+        
+        $validator = Validator::make($request->json()->all() , [
+            'CategoryName' => 'required|string|max:255',
+            'ProgramName' => 'required|string|max:255',
+            'Location' => 'required|string|max:255',
+            'Instructor' => 'required|string|max:255',
+            'StartDate' => 'required|date_format:Y/m/d',
+            'EndDate' => 'required|date_format:Y/m/d',
+            'Status' => 'required|string|max:255',
+            'RatingBefore' => 'required|string|max:255',
+          
+        ]);
+
+        if($validator->fails())
+            {
+                return response()->json($validator->errors()->toJson(), 400);
+            } 
+        
+        $id= $request->json()->get('userId');
+        
+        $user=tb_init_user_goals::where('userId',$id)
+                                ->update([
+            'user_goal_category_name' => $request->json()->get('CategoryName'),
+            'user_goal_program_name' => $request->json()->get('ProgramName'),
+            'user_goal_program_location' => $request->json()->get('Location'),
+            'user_goal_program_instructor' => $request->json()->get('Instructor'),
+            'user_goal_program_startdate' => $request->json()->get('StartDate'),
+            'user_goal_program_enddate' => $request->json()->get('EndDate'),
+            'user_goal_program_status' => $request->json()->get('Status'),
+            'user_goal_program_participantcomments' => $request->json()->get('ParticipantComments'),
+            'user_goal_program_additionalcomments' => $request->json()->get('AdditionalComments'),
+            'user_goal_program_RatingBefore' => $request->json()->get('RatingBefore'),
+            'user_goal_program_RatingAfter' => $request->json()->get('RatingAfter')
+            
+        ]);
+         
+              // return response("Goals Added", 200);
+               return response()->json(['success'=> True,'message'=> 'User Goals Added Updated']);
+    }
+
+    // public function irf_updateGoals($code)
+    // {
+    //     $check = DB::table('tb_init_user_goals')->where('tb_user_details_goals_update_id',$code)->first();
+
+    // }
+
+    public function getprogramdetails($id)
+    {
+        $HealthResults = DB::Table('tb_init_user_program_details')
+                            ->select('programName')->where('userId',$id)
+                            ->where('category','health')
+                            ->pluck('programName');
+                                                                                       
+
+        $EmploymentResults = DB::Table('tb_init_user_program_details')
+                            ->select('programName')->where('userId',$id)
+                            ->where('category','employment')
+                            ->pluck('programName');
+                                                                                      
+        
+        $NeighbourhoodResults = DB::Table('tb_init_user_program_details')
+                                ->select('programName')->where('userId',$id)
+                                ->where('category','neighbourhood')
+                                ->pluck('programName');
+                                                                                       
+                                                                                       
+        $StaffResults = DB::Table('tb_init_user_program_details')
+                            ->select('programName')->where('userId',$id)
+                            ->where('category','staff')
+                            ->pluck('programName');
+                                                                                        
+       
+        $AfterschoolResults = DB::Table('tb_init_user_program_details')
+                                ->select('programName')
+                                ->where('userId',$id)
+                                ->where('category','AfterSchool')
+                                ->pluck('programName');
+        $search['HealthResults'] = $HealthResults;
+        $search['EmploymentResults'] = $EmploymentResults;
+        $search['NeighbourhoodResults'] = $NeighbourhoodResults;
+        $search['StaffResults'] = $StaffResults;
+        $search['AfterschoolResults'] = $AfterschoolResults; 
+
+        return response()->json([
+                            'success'=> true,
+                            'data' => $search
+                            ]);
+    }
+    public function irf_deleteGoal(Request $request)
+    {
 
         $id= $request->json()->get('userId');
         
-        // $user=tb_init_user_goals::where('userId',$id)
-        //                     ->update([
-        $user = tb_init_user_goals::create([
-            'userId' => $request->json()->get('userId'),
-            'goalId' => $request->json()->get('goalId'),
-            'user_goal_category_name' => $request->json()->get('user_goal_category_name'),
-            'user_goal_program_name' => $request->json()->get('user_goal_program_name'),
-            'user_goal_program_location' => $request->json()->get('user_goal_program_location'),
-            'user_goal_program_instructor' => $request->json()->get('user_goal_program_instructor'),
-            'user_goal_program_startdate' => $request->json()->get('user_goal_program_startdate'),
-            'user_goal_program_enddate' => $request->json()->get('user_goal_program_enddate'),
-            'user_goal_program_participantcomments' => $request->json()->get('user_goal_program_participantcomments'),
-            'user_goal_program_additionalcomments' => $request->json()->get('user_goal_program_additionalcomments'),
-            'user_goal_program_status' => $request->json()->get('user_goal_program_status'),
-            'user_goal_program_RatingBefore' => $request->json()->get('user_goal_program_RatingBefore'),
-            'user_goal_program_RatingAfter' => $request->json()->get('user_goal_program_RatingAfter'),             
-        ]);
-            return response()->json(['message'=> 'User Updated']);
-         
-     }
+        $program= $request->json()->get('ProgramName');
+
+        DB::table('tb_init_user_goals')->where('userId', $id)
+                                        ->where('user_goal_program_name',$program)
+                                        ->delete();
+
+        return response()->json(['success'=> true,'message'=> 'Goal Deleted']);                                      
+    }
+
+    public function irf_childUpdate(Request $request)
+    {
+
+        $id = $request->json()->get('userId');
+
+        foreach($ChildDetails as $key => $title)
+        {
+            $childid = $title['childId'];
+            
+            $data6=tb_child_details::where('parentId',$id)
+            ->where('childId',$childid)
+            ->update([
+                'childFirstname' => $title['childFirstName'],
+                'childLastname' => $title['childLastName'],
+                'childDob' => $title['childBirthDate']]);
+         }
+         return response()->json(['success'=> true,'message'=> 'Child details updated']);  
+    }
 
     public function showallusers()
      {
-        return response()->json(Irf::all());
+        return response()->json(tb_init_user_details::all());
      }
 }

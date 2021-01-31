@@ -25,6 +25,6 @@ class tb_init_user_goals extends Model
         'user_goal_program_status',
         'user_goal_program_RatingBefore',
         'user_goal_program_RatingAfter',
-        
+        'userId',
     ];
 }

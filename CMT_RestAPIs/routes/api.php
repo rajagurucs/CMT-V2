@@ -50,7 +50,17 @@ Route::PUT('irf_userUpdate', 'App\Http\Controllers\IrfController@irf_userUpdate'
 
 Route::post('irf_programUpdate', 'App\Http\Controllers\IrfController@irf_programUpdate');
 
-Route::post('irf_addGoals', 'App\Http\Controllers\IrfController@irf_addGoals');
+Route::post('irf_addGoal', 'App\Http\Controllers\IrfController@irf_addGoal');
+
+Route::post('irf_updateGoal', 'App\Http\Controllers\IrfController@irf_updateGoal');
+
+Route::post('irf_deleteGoal', 'App\Http\Controllers\IrfController@irf_deleteGoal');
+
+//Route::post('addgoal', 'App\Http\Controllers\Add_Goals@AddGoals');
+
+Route::get('getprograms/{id}', 'App\Http\Controllers\IrfController@getprogramdetails');
+
+Route::post('irf_childUpdate', 'App\Http\Controllers\IrfController@irf_childUpdate');
 
 //Route::put('irf_update/{user_id}', 'App\Http\Controllers\IrfController@irf_update');
 
