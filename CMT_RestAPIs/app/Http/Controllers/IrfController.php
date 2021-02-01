@@ -581,6 +581,75 @@ class IrfController extends BaseController
          }
          return response()->json(['success'=> true,'message'=> 'Child details updated']);  
     }
+    
+    public function addChild(Request $request)
+    {
+
+            $id = $request->json()->get('userId');
+
+            $ChildDetails = $request->json()->get('child_program');
+                
+                foreach($ChildDetails as $key => $title)
+                {
+                    $data2 = new tb_child_detail();
+                    $data2->childFirstname = $title['childFirstName'];
+                    $data2->childLastname = $title['childLastName'];
+                    $data2->childDob = $title['childBirthDate'];
+                    $data2->parentId = $id;
+                    $data2->save();
+                }
+        return response()->json(['success'=> true,'message'=> 'Child Added']); 
+                //return response("Child Added", 200);
+        }
+    public function childUpdate(Request $request)
+    {
+        $id = $request->json()->get('userId');
+
+       $ChildDetails = $request->json()->get('child_program');
+                
+        foreach($ChildDetails as $key => $title)
+        {
+            $childid = $title['childId'];
+            
+            $data6=tb_child_detail::where('parentId',$id)
+            ->where('childId',$childid)
+            ->update([
+                'childFirstname' => $title['childFirstName'],
+                'childLastname' => $title['childLastName'],
+                'childDob' => $title['childBirthDate']]);
+         }
+        return response()->json(['success'=> true,'message'=> 'Child Updated']);
+    }
+    
+    public function childDelete(Request $request)
+    {
+
+        $id = $request->json()->get('userId');
+
+        $ChildDetails = $request->json()->get('child_program');
+             
+        foreach($ChildDetails as $key => $title)
+        {
+         $childid = $title['childId'];
+         
+         $data1= tb_child_detail::where('parentId', $id)
+                            ->where('childId',$childid)
+                            ->first();
+        if(!empty($data1))
+        {
+            DB::table('tb_child_details')->where('parentId', $id)
+                                           ->where('childId',$childid)
+                                            ->delete();
+        }
+        else
+            {
+                //return response("Child Not Available", 200); 
+                return response()->json(['success'=> false,'message'=> 'Child Not Available']);
+            }  
+        }
+        //return response("Child Deleted", 200);
+        return response()->json(['success'=> true,'message'=> 'Child Deleted']);
+    }    
 
     public function showallusers()
      {
