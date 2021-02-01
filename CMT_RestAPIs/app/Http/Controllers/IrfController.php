@@ -556,11 +556,22 @@ class IrfController extends BaseController
         
         $program= $request->json()->get('ProgramName');
 
-        DB::table('tb_init_user_goals')->where('userId', $id)
+        $data1= tb_init_user_goals::where('userId', $id)
                                         ->where('user_goal_program_name',$program)
-                                        ->delete();
+                                        ->first();
+         if(!empty($data1))
+         {
 
-        return response()->json(['success'=> true,'message'=> 'Goal Deleted']);                                      
+        DB::table('tb_init_user_goals')->where('userId', $id)
+                                                ->where('user_goal_program_name',$program)
+                                                ->delete();
+
+        return response()->json(['success'=> true,'message'=> 'Goal Deleted']); 
+          }
+        else
+        {
+             return response()->json(['success'=> false,'message'=> 'Goal Not Available']);
+        } 
     }
 
     public function irf_childUpdate(Request $request)
