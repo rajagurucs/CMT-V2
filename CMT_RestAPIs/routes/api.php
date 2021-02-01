@@ -60,7 +60,11 @@ Route::post('irf_deleteGoal', 'App\Http\Controllers\IrfController@irf_deleteGoal
 
 Route::get('getprograms/{id}', 'App\Http\Controllers\IrfController@getprogramdetails');
 
-Route::post('irf_childUpdate', 'App\Http\Controllers\IrfController@irf_childUpdate');
+Route::post('irf_childAdd', 'App\Http\Controllers\IrfController@childAdd');
+
+Route::post('irf_childUpdate', 'App\Http\Controllers\IrfController@childUpdate');
+
+Route::post('irf_childDelete', 'App\Http\Controllers\IrfController@ChildDelete');
 
 //Route::put('irf_update/{user_id}', 'App\Http\Controllers\IrfController@irf_update');
 
