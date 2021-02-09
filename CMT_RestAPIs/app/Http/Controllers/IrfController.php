@@ -7,8 +7,9 @@ use App\Models\tb_child_details;
 use App\Models\tb_init_user_program_details;
 use App\Models\tb_init_user_extra_details;
 use App\Models\tb_init_user_goals;
+use App\Models\tb_init_user_health_details;
 //use App\Models\tb_community_programs;
-//use App\Models\tb_init_user_health_details;
+
 
 use Illuminate\Http\Request;
 
@@ -248,7 +249,11 @@ class IrfController extends BaseController
         $ProgramDetails = tb_init_user_program_details::where('userId',$id)->get();
 
 
-        $HealthDetails = tb_init_user_extra_details::where('userId',$id)->get();
+        // $HealthDetails = tb_init_user_extra_details::where('userId',$id)->get();
+        $HealthDetails = DB::table('tb_init_user_extra_details')
+            ->join('tb_init_user_health_details', 'tb_init_user_extra_details.userId', '=', 'tb_init_user_health_details.userId')            
+            ->get();
+
 
 
         $GoalDetails = tb_init_user_goals::where('userId',$id)->get();
@@ -259,6 +264,10 @@ class IrfController extends BaseController
         $search['GoalDetails'] = $GoalDetails;
         $search['Program_Details'] = $ProgramDetails;
         $search['Health_Details'] = $HealthDetails;
+
+        // $users = DB::table('tb_init_user_extra_details')
+        //     ->join('tb_init_user_health_details', 'tb_init_user_extra_details.userId', '=', 'tb_init_user_health_details.userId')            
+        //     ->get();
 
         //return response($search,200);
         //return response()->json($search, 200);
@@ -401,27 +410,7 @@ class IrfController extends BaseController
                  
     }
 
-    public function irf_update($user_id)
-     {
-         //$getdata = $request->get('getdata');
-         
-         $user_id = DB::table('tb_init_user_details')->where('userId',$user_id)->first();
-
-         if(!is_null($user_id))
-         {
-             //$user->update(['IsActive' => 1]);
-             return response()->json(['success'=> True,
-                                    'message'=> 'User Found'
-                                     ]);
-         }
-         return response()->json(['success'=> false,
-                                    'message'=> 'User Not Found'
-                                     ]);
-           
-         
-     }
-
-     public function irf_addGoal(Request $request)
+    public function irf_addGoal(Request $request)
      {
         $validator = Validator::make($request->json()->all() , [
             'CategoryName' => 'required|string|max:255',
@@ -451,7 +440,7 @@ class IrfController extends BaseController
             'user_goal_program_participantcomments' => $request->json()->get('ParticipantComments'),
             'user_goal_program_additionalcomments' => $request->json()->get('AdditionalComments'),
             'user_goal_program_RatingBefore' => $request->json()->get('RatingBefore'),
-            'user_goal_program_RatingAfter' => $request->json()->get('RatingAfter'),
+            'user_goal_program_RatingAfter' => $request->json()->get('RatingAfter'),  
             'userId' => $request->json()->get('userId')            
         ]);
          
@@ -462,41 +451,47 @@ class IrfController extends BaseController
     public function irf_updateGoal(Request $request)
     {
         
-        $validator = Validator::make($request->json()->all() , [
-            'CategoryName' => 'required|string|max:255',
-            'ProgramName' => 'required|string|max:255',
-            'Location' => 'required|string|max:255',
-            'Instructor' => 'required|string|max:255',
-            'StartDate' => 'required|date_format:Y/m/d',
-            'EndDate' => 'required|date_format:Y/m/d',
-            'Status' => 'required|string|max:255',
-            'RatingBefore' => 'required|string|max:255',
+        // $validator = Validator::make($request->json()->all() , [
+        //     'CategoryName' => 'required|string|max:255',
+        //     'ProgramName' => 'required|string|max:255',
+        //     'Location' => 'required|string|max:255',
+        //     'Instructor' => 'required|string|max:255',
+        //     'StartDate' => 'required|date_format:Y/m/d',
+        //     'EndDate' => 'required|date_format:Y/m/d',
+        //     'Status' => 'required|string|max:255',
+        //     'RatingBefore' => 'required|string|max:255',
           
-        ]);
+        // ]);
 
-        if($validator->fails())
-            {
-                return response()->json($validator->errors()->toJson(), 400);
-            } 
+        // if($validator->fails())
+        //     {
+        //         return response()->json($validator->errors()->toJson(), 400);
+        //     } 
         
         $id= $request->json()->get('userId');
+        $goalUpdate= $request->json()->get('goal_update');
+
+        foreach($goalUpdate as $key => $title)
+        {
+            $goalid = $title['tb_user_details_goals_update_id'];            
         
         $user=tb_init_user_goals::where('userId',$id)
+        ->where('tb_user_details_goals_update_id',$goalid)
                                 ->update([
-            'user_goal_category_name' => $request->json()->get('CategoryName'),
-            'user_goal_program_name' => $request->json()->get('ProgramName'),
-            'user_goal_program_location' => $request->json()->get('Location'),
-            'user_goal_program_instructor' => $request->json()->get('Instructor'),
-            'user_goal_program_startdate' => $request->json()->get('StartDate'),
-            'user_goal_program_enddate' => $request->json()->get('EndDate'),
-            'user_goal_program_status' => $request->json()->get('Status'),
-            'user_goal_program_participantcomments' => $request->json()->get('ParticipantComments'),
-            'user_goal_program_additionalcomments' => $request->json()->get('AdditionalComments'),
-            'user_goal_program_RatingBefore' => $request->json()->get('RatingBefore'),
-            'user_goal_program_RatingAfter' => $request->json()->get('RatingAfter')
+            'user_goal_category_name' => $title['CategoryName'],
+            'user_goal_program_name' => $title['ProgramName'],
+            'user_goal_program_location' => $title['Location'],
+            'user_goal_program_instructor' => $title['Instructor'],
+            'user_goal_program_startdate' => $title['StartDate'],
+            'user_goal_program_enddate' => $title['EndDate'],
+            'user_goal_program_status' => $title['Status'],
+            'user_goal_program_participantcomments' => $title['ParticipantComments'],
+            'user_goal_program_additionalcomments' => $title['AdditionalComments'],
+            'user_goal_program_RatingBefore' => $title['RatingBefore'],
+            'user_goal_program_RatingAfter' => $title['RatingAfter']
             
         ]);
-         
+                                }
               // return response("Goals Added", 200);
                return response()->json(['success'=> True,'message'=> 'User Goals Added Updated']);
     }
@@ -509,6 +504,156 @@ class IrfController extends BaseController
 
     public function getprogramdetails($id)
     {
+        $HealthResults = DB::Table('tb_init_user_program_details')
+                            ->select('programName')->where('userId',$id)
+                            ->where('category','health')
+                            ->pluck('programName');
+                                                                                       
+
+        $EmploymentResults = DB::Table('tb_init_user_program_details')
+                            ->select('programName')->where('userId',$id)
+                            ->where('category','employment')
+                            ->pluck('programName');
+                                                                                      
+        
+        $NeighbourhoodResults = DB::Table('tb_init_user_program_details')
+                                ->select('programName')->where('userId',$id)
+                                ->where('category','neighbourhood_net')
+                                ->pluck('programName');
+                                                                                       
+                                                                                       
+        $StaffResults = DB::Table('tb_init_user_program_details')
+                            ->select('programName')->where('userId',$id)
+                            ->where('category','staff')
+                            ->pluck('programName');
+                                                                                        
+       
+        $AfterschoolResults = DB::Table('tb_init_user_program_details')
+                                ->select('programName')
+                                ->where('userId',$id)
+                                ->where('category','AfterSchool')
+                                ->pluck('programName');
+                                if(is_null($AfterschoolResults))
+                                {
+                                    $Afterschool = 'no';
+                                }
+                                else{
+                                    $Afterschool = 'yes';
+                                }
+                                
+        $search['HealthResults'] = $HealthResults;
+        $search['EmploymentResults'] = $EmploymentResults;
+        $search['NeighbourhoodResults'] = $NeighbourhoodResults;
+        $search['StaffResults'] = $StaffResults;
+        $search['AfterschoolResults'] = $Afterschool; 
+
+
+        return response()->json([
+                            'success'=> true,
+                            'data' => $search
+                            ]);
+    }
+
+    public function irf_deleteGoal(Request $request)
+    {
+        $id= $request->json()->get('userId');
+        
+        $program= $request->json()->get('ProgramName');
+
+        $data1= tb_init_user_goals::where('userId', $id)
+                                    ->where('user_goal_program_name',$program)
+                                    ->first();
+        if(!empty($data1))
+        {
+             DB::table('tb_init_user_goals')->where('userId', $id)
+                                            ->where('user_goal_program_name',$program)
+                                            ->delete();
+            return response()->json(['success'=> true,'message'=> 'Goal Deleted']); 
+        }
+        else
+        {
+             return response()->json(['success'=> false,'message'=> 'Goal Not Available']);
+        } 
+    }
+
+    public function childAdd(Request $request)
+    {
+
+            $id = $request->json()->get('userId');
+
+            $ChildDetails = $request->json()->get('child_program');
+                
+                foreach($ChildDetails as $key => $title)
+                {
+                    $data2 = new tb_child_details();
+                    $data2->childFirstname = $title['childFirstName'];
+                    $data2->childLastname = $title['childLastName'];
+                    $data2->childDob = $title['childBirthDate'];
+                    $data2->parentId = $id;
+                    $data2->save();
+                }
+        return response()->json(['success'=> true,'message'=> 'Child Added']); 
+                //return response("Child Added", 200);
+        }
+    public function childUpdate(Request $request)
+    {
+        $id = $request->json()->get('userId');
+
+       $ChildDetails = $request->json()->get('child_program');
+                
+        foreach($ChildDetails as $key => $title)
+        {
+            $childid = $title['childId'];
+            
+            $data6=tb_child_details::where('parentId',$id)
+            ->where('childId',$childid)
+            ->update([
+                'childFirstname' => $title['childFirstName'],
+                'childLastname' => $title['childLastName'],
+                'childDob' => $title['childBirthDate']]);
+         }
+        return response()->json(['success'=> true,'message'=> 'Child Updated']);
+    }
+    
+    public function childDelete(Request $request)
+    {
+
+        $id = $request->json()->get('userId');
+
+        $ChildDetails = $request->json()->get('child_program');
+             
+        foreach($ChildDetails as $key => $title)
+        {
+         $childid = $title['childId'];
+         
+         $data1= tb_child_details::where('parentId', $id)
+                            ->where('childId',$childid)
+                            ->first();
+        if(!empty($data1))
+        {
+            DB::table('tb_child_details')->where('parentId', $id)
+                                           ->where('childId',$childid)
+                                            ->delete();
+        }
+        else
+            {
+                //return response("Child Not Available", 200); 
+                return response()->json(['success'=> false,'message'=> 'Child Not Available']);
+            }  
+        }
+        //return response("Child Deleted", 200);
+        return response()->json(['success'=> true,'message'=> 'Child Deleted']);
+    }    
+    
+    public function gethealth_programs($id)
+    {
+        // $HealthResults = DB::Table('tb_init_user_program_details')->select('programName')->where('userId',$id)
+        //                                                           ->pluck('programName');
+        // return response()->json([
+        //                 'success'=> true,
+        //                 'data' => $HealthResults
+        //                 ]);
+
         $HealthResults = DB::Table('tb_init_user_program_details')
                             ->select('programName')->where('userId',$id)
                             ->where('category','health')
@@ -538,6 +683,14 @@ class IrfController extends BaseController
                                 ->where('userId',$id)
                                 ->where('category','AfterSchool')
                                 ->pluck('programName');
+
+        $others = DB::Table('tb_init_user_program_details')
+                                ->select('programName')
+                                ->where('userId',$id)
+                                ->where('category','!=','Other')
+                                ->orwhere('programName','==','Other') 
+                                ->pluck('programName');
+                                
         $search['HealthResults'] = $HealthResults;
         $search['EmploymentResults'] = $EmploymentResults;
         $search['NeighbourhoodResults'] = $NeighbourhoodResults;
@@ -546,121 +699,227 @@ class IrfController extends BaseController
 
         return response()->json([
                             'success'=> true,
-                            'data' => $search
+                            'data' => $others
                             ]);
     }
-    public function irf_deleteGoal(Request $request)
-    {
 
-        $id= $request->json()->get('userId');
+    public function irf_addHealth(Request $request)
+    {
+    //    $validator = Validator::make($request->json()->all() , [
+
+    //     'OverallHealth' => 'required|string|max:255',
+    //     'LifeSatisfaction' => 'required|string|max:255',
+    //     'SocialNetwork' => 'required|string|max:255',
+    //     'CommunityConnection' => 'required|string|max:255',
+    //     'StressLevel' => 'required|string|max:255',
+    //     'PersonalHealthIssues' => 'required|string|max:255',
+    //     'FamilyDoctor' => 'required|string|max:255',
+    //     'FamilyDoctorVisit' => 'required|string|max:255',
+    //     'ClinicVisit' => 'required|string|max:255',
+    //     'EmergencyVisit' => 'required|string|max:255',
+    //     'HospitalVisit' => 'required|string|max:255',
+    //     'DiseasesAwareness' => 'required|string|max:255',
+    //     'CommunityAwareness' => 'required|string|max:255',
+    //     'PhysicalActivity' => 'required|string|max:255',
         
-        $program= $request->json()->get('ProgramName');
+    //     //'cmtagent_curr' => 'required|string|max:255',
+    //     ]);
 
-        $data1= tb_init_user_goals::where('userId', $id)
-                                        ->where('user_goal_program_name',$program)
+    //    if($validator->fails())
+    //        {
+    //            return response()->json($validator->errors()->toJson(), 400);
+    //        } 
+
+    $userId = $request->json()->get('userId'); 
+    
+
+    $data= tb_init_user_health_details::where('userId', $userId)
                                         ->first();
-         if(!empty($data1))
-         {
+        if(is_null($data))
+        {
 
-        DB::table('tb_init_user_goals')->where('userId', $id)
-                                                ->where('user_goal_program_name',$program)
-                                                ->delete();
+       
 
-        return response()->json(['success'=> true,'message'=> 'Goal Deleted']); 
-          }
+       $user = tb_init_user_health_details::create([
+        
+        'myhealth_curr_state' => $request->json()->get('OverallHealth'),        
+        'mylifesatisfaction_curr_state' => $request->json()->get('LifeSatisfaction'),        
+        'mysocialnetwork_curr_state' => $request->json()->get('SocialNetwork'),
+        'mycommunitynetwork_curr_state' => $request->json()->get('CommunityConnection'),        
+        'mystresslevel_curr_state' => $request->json()->get('StressLevel'),        
+        'myhealthissues_curr_state' => $request->json()->get('PersonalHealthIssues'),        
+        'myfamilydoctor_curr_state' => $request->json()->get('FamilyDoctor'),
+        'myvisittofamilydoctor_curr_state' => $request->json()->get('FamilyDoctorVisit'),        
+        'myvisittoclinic_curr_state' => $request->json()->get('ClinicVisit'),
+        'myvisittoemergency_curr_state' => $request->json()->get('EmergencyVisit'),
+        'myvisittohospital_curr_state' => $request->json()->get('HospitalVisit'),        
+        'mydiseaseawareness_curr_state' => $request->json()->get('DiseasesAwareness'),        
+        'mycmtprogramawareness_curr_state' => $request->json()->get('CommunityAwareness'),        
+        'myphysicalactiveness_curr_state' => $request->json()->get('PhysicalActivity'),
+        //'cmtagent_curr' => $request->json()->get('cmtagent_curr'),
+                 
+        'myhealth_curr_prog' => $request->json()->get('OverallHealth_prog'), 
+        'mylifesatisfaction_curr_prog' => $request->json()->get('LifeSatisfaction_prog'), 
+        'mysocialnetwork_curr_prog' => $request->json()->get('SocialNetwork_prog'), 
+        'mycommunitynetwork_curr_prog' => $request->json()->get('CommunityConnection_prog'), 
+        'mystresslevel_curr_prog' => $request->json()->get('StressLevel_prog'), 
+        'myhealthissues_curr_prog' => $request->json()->get('PersonalHealthIssues_prog'), 
+        'myfamilydoctor_curr_prog' => $request->json()->get('FamilyDoctor_prog'), 
+        'mydiseaseawareness_curr_prog' => $request->json()->get('DiseasesAwareness_prog'), 
+        'mycmtprogramawareness_curr_prog' => $request->json()->get('CommunityAwareness_prog'), 
+        'myphysicalactiveness_curr_prog' => $request->json()->get('PhysicalActivity_prog'), 
+
+        'userId' => $request->json()->get('userId')            
+       ]);
+
+        }
         else
         {
-             return response()->json(['success'=> false,'message'=> 'Goal Not Available']);
-        } 
-    }
+            $data6=tb_init_user_health_details::where('userId',$userId)                                            
+                                            ->update([
+        'myhealth_curr_state' => $request->json()->get('OverallHealth'),        
+        'mylifesatisfaction_curr_state' => $request->json()->get('LifeSatisfaction'),        
+        'mysocialnetwork_curr_state' => $request->json()->get('SocialNetwork'),
+        'mycommunitynetwork_curr_state' => $request->json()->get('CommunityConnection'),        
+        'mystresslevel_curr_state' => $request->json()->get('StressLevel'),        
+        'myhealthissues_curr_state' => $request->json()->get('PersonalHealthIssues'),        
+        'myfamilydoctor_curr_state' => $request->json()->get('FamilyDoctor'),
+        'myvisittofamilydoctor_curr_state' => $request->json()->get('FamilyDoctorVisit'),        
+        'myvisittoclinic_curr_state' => $request->json()->get('ClinicVisit'),
+        'myvisittoemergency_curr_state' => $request->json()->get('EmergencyVisit'),
+        'myvisittohospital_curr_state' => $request->json()->get('HospitalVisit'),        
+        'mydiseaseawareness_curr_state' => $request->json()->get('DiseasesAwareness'),        
+        'mycmtprogramawareness_curr_state' => $request->json()->get('CommunityAwareness'),        
+        'myphysicalactiveness_curr_state' => $request->json()->get('PhysicalActivity'),
 
-    public function irf_childUpdate(Request $request)
-    {
+        'myhealth_curr_prog' => $request->json()->get('OverallHealth_prog'), 
+        'mylifesatisfaction_curr_prog' => $request->json()->get('LifeSatisfaction_prog'), 
+        'mysocialnetwork_curr_prog' => $request->json()->get('SocialNetwork_prog'), 
+        'mycommunitynetwork_curr_prog' => $request->json()->get('CommunityConnection_prog'), 
+        'mystresslevel_curr_prog' => $request->json()->get('StressLevel_prog'), 
+        'myhealthissues_curr_prog' => $request->json()->get('PersonalHealthIssues_prog'), 
+        'myfamilydoctor_curr_prog' => $request->json()->get('FamilyDoctor_prog'), 
+        'mydiseaseawareness_curr_prog' => $request->json()->get('DiseasesAwareness_prog'), 
+        'mycmtprogramawareness_curr_prog' => $request->json()->get('CommunityAwareness_prog'), 
+        'myphysicalactiveness_curr_prog' => $request->json()->get('PhysicalActivity_prog'),
+        ]);
 
-        $id = $request->json()->get('userId');
-
-        foreach($ChildDetails as $key => $title)
-        {
-            $childid = $title['childId'];
-            
-            $data6=tb_child_details::where('parentId',$id)
-            ->where('childId',$childid)
-            ->update([
-                'childFirstname' => $title['childFirstName'],
-                'childLastname' => $title['childLastName'],
-                'childDob' => $title['childBirthDate']]);
-         }
-         return response()->json(['success'=> true,'message'=> 'Child details updated']);  
-    }
-    
-    public function addChild(Request $request)
-    {
-
-            $id = $request->json()->get('userId');
-
-            $ChildDetails = $request->json()->get('child_program');
-                
-                foreach($ChildDetails as $key => $title)
-                {
-                    $data2 = new tb_child_detail();
-                    $data2->childFirstname = $title['childFirstName'];
-                    $data2->childLastname = $title['childLastName'];
-                    $data2->childDob = $title['childBirthDate'];
-                    $data2->parentId = $id;
-                    $data2->save();
-                }
-        return response()->json(['success'=> true,'message'=> 'Child Added']); 
-                //return response("Child Added", 200);
         }
-    public function childUpdate(Request $request)
-    {
-        $id = $request->json()->get('userId');
-
-       $ChildDetails = $request->json()->get('child_program');
-                
-        foreach($ChildDetails as $key => $title)
-        {
-            $childid = $title['childId'];
-            
-            $data6=tb_child_detail::where('parentId',$id)
-            ->where('childId',$childid)
-            ->update([
-                'childFirstname' => $title['childFirstName'],
-                'childLastname' => $title['childLastName'],
-                'childDob' => $title['childBirthDate']]);
-         }
-        return response()->json(['success'=> true,'message'=> 'Child Updated']);
+        return response()->json(['success'=> True,'message'=> 'User Health Details Added']);
     }
-    
-    public function childDelete(Request $request)
-    {
 
-        $id = $request->json()->get('userId');
+            // $id = $request->json()->get('userId');
+            // $value = new tb_init_user_health_details();
+            // $OverallHealths = $request->json()->get('OverallHealth');
+               
+            //    foreach($OverallHealths as $key)
+            //    {
+            //        return response ($key,200);
 
-        $ChildDetails = $request->json()->get('child_program');
-             
-        foreach($ChildDetails as $key => $title)
-        {
-         $childid = $title['childId'];
+            //        $value->myhealth_curr_prog = $title['myhealth_curr_prog'];
+            //        $value->myhealth_curr_state = $title['myhealth_curr_state'];                   
+            //    }
+
+            // $LifeSatisfactions = $request->json()->get('LifeSatisfaction');
+               
+            //    foreach($LifeSatisfactions as $key => $title)
+            //    {
+            //        $value->mylifesatisfaction_curr_prog = $title['mylifesatisfaction_curr_prog'];
+            //        $value->mylifesatisfaction_curr_state = $title['mylifesatisfaction_curr_state'];                   
+            //    }
+
+            // $SocialNetworks = $request->json()->get('SocialNetwork');
+               
+            //    foreach($SocialNetworks as $key => $title)
+            //    {
+            //        $value->mysocialnetwork_curr_prog = $title['mysocialnetwork_curr_prog'];
+            //        $value->mysocialnetwork_curr_state = $title['mysocialnetwork_curr_state'];                   
+            //    }
+            
+            // $CommunityConnections = $request->json()->get('CommunityConnection');
+               
+            //    foreach($CommunityConnections as $key => $title)
+            //    {
+            //        $value->mycommunitynetwork_curr_prog = $title['mycommunitynetwork_curr_prog'];
+            //        $value->mycommunitynetwork_curr_state = $title['mycommunitynetwork_curr_state'];                   
+            //    }
+
+            // $StressLevels = $request->json()->get('StressLevel');
+               
+            //    foreach($StressLevels as $key => $title)
+            //    {
+            //        $value->mystresslevel_curr_prog = $title['mystresslevel_curr_prog'];
+            //        $value->mystresslevel_curr_state = $title['mystresslevel_curr_state'];                   
+            //    }
+
+            // $PersonalHealthIssues = $request->json()->get('PersonalHealthIssues');
+               
+            //    foreach($PersonalHealthIssues as $key => $title)
+            //    {
+            //        $value->myhealthissues_curr_prog = $title['myhealthissues_curr_prog'];
+            //        $value->myhealthissues_curr_state = $title['myhealthissues_curr_state'];                   
+            //    }
+
+            // $FamilyDoctor = $request->json()->get('FamilyDoctor');
+               
+            //    foreach($FamilyDoctor as $key => $title)
+            //    {
+            //        $value->myfamilydoctor_curr_prog = $title['myfamilydoctor_curr_prog'];
+            //        $value->myfamilydoctor_curr_state = $title['myfamilydoctor_curr_state'];
+            //        $value->FamilyDoctorVisit = $title['myvisittofamilydoctor_curr_state'];
+            //        $value->ClinicVisit = $title['myvisittoclinic_curr_state'];
+            //        $value->EmergencyVisit = $title['myvisittoemergency_curr_state'];
+            //        $value->HospitalVisit = $title['myvisittohospital_curr_state'];
+            //        $value->DiseasesAwareness = $title['mydiseaseawareness_curr_state'];   
+                                   
+            //    }  
+
+            // $DiseasesAwareness = $request->json()->get('DiseasesAwareness');
+               
+            //     foreach($DiseasesAwareness as $key => $title)
+            //     {
+            //         $value->mydiseaseawareness_curr_prog = $title['mydiseaseawareness_curr_prog'];
+            //         $value->mydiseaseawareness_curr_state = $title['mydiseaseawareness_curr_state'];                   
+            //     }     
+            
+            // $CommunityAwareness = $request->json()->get('CommunityAwareness');
+               
+            //     foreach($FamilyDoctor as $key => $title)
+            //     {
+            //         $value->mycmtprogramawareness_curr_prog = $title['mycmtprogramawareness_curr_prog'];
+            //         $value->mycmtprogramawareness_curr_state = $title['mycmtprogramawareness_curr_state'];                   
+            //     }     
+                
+            // $PhysicalActivity = $request->json()->get('PhysicalActivity');
+               
+            //     foreach($PhysicalActivity as $key => $title)
+            //     {
+            //         $value->myphysicalactiveness_curr_prog = $title['myphysicalactiveness_curr_prog'];
+            //         $value->myphysicalactiveness_curr_state = $title['myphysicalactiveness_curr_state'];                   
+            //     }
+            // //'cmtagent_curr' => $request->json()->get('AgentName'), 
+            // $value->userId = $id;
+            // $value->save();
+    //    return response()->json(['success'=> True,'message'=> 'User Health Details Added']);
+//    }
+
+
+    //  {
+    //      //$getdata = $request->get('getdata');
          
-         $data1= tb_child_detail::where('parentId', $id)
-                            ->where('childId',$childid)
-                            ->first();
-        if(!empty($data1))
-        {
-            DB::table('tb_child_details')->where('parentId', $id)
-                                           ->where('childId',$childid)
-                                            ->delete();
-        }
-        else
-            {
-                //return response("Child Not Available", 200); 
-                return response()->json(['success'=> false,'message'=> 'Child Not Available']);
-            }  
-        }
-        //return response("Child Deleted", 200);
-        return response()->json(['success'=> true,'message'=> 'Child Deleted']);
-    }    
+    //      $user_id = DB::table('tb_init_user_details')->where('userId',$user_id)->first();
+
+    //      if(!is_null($user_id))
+    //      {
+    //          //$user->update(['IsActive' => 1]);
+    //          return response()->json(['success'=> True,
+    //                                 'message'=> 'User Found'
+    //                                  ]);
+    //      }
+    //      return response()->json(['success'=> false,
+    //                                 'message'=> 'User Not Found'
+    //                                  ]);
+    //  }
 
     public function showallusers()
      {

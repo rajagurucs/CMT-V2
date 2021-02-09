@@ -39,7 +39,7 @@ class tb_init_user_health_details extends Model
         'myphysicalactiveness_curr_prog',
         'myphysicalactiveness_curr_state',
         'cmtagent_curr',
-        
+        'userId',
         
     ];
 }
