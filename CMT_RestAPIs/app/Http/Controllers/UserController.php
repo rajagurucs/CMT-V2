@@ -51,8 +51,7 @@ class UserController extends Controller
             'postal' => 'required|string|max:255',
         ]);
 
-        if($validator->fails())
-        {
+        if($validator->fails()){
                 return response()->json($validator->errors()->toJson(), 400);
         }
         $firstName = $request->firstName;
@@ -69,11 +68,7 @@ class UserController extends Controller
         $city = $request->city;
         $postal = $request->postal;
 
-        DB::beginTransaction();
-        try 
-        {
-
-            $user = User::create([
+        $user = User::create([
                                 'firstName' => $firstName,
                                 'middleName' => $middleName,
                                 'lastName' => $lastName,
@@ -107,42 +102,33 @@ class UserController extends Controller
         $verification_code = str::random(30); //Generate verification code
 
         DB::table('user_verifications')->insert(['user_id'=>$user->id,'token'=>$verification_code]);
-        
 
         $subject = "Please verify your email address. - CMT";
         
         Mail::send('email.verify', ['firstName' => $firstName, 'verification_code' => $verification_code],
-            function($mail) use ($email, $firstName, $subject)
-            {
-                $mail->from(env('MAIL_FROM_ADDRESS1'), "CMT_Notification");
+            function($mail) use ($email, $firstName, $subject){
+                $mail->from(env('MAIL_FROM_ADDRESS'), "CMT_Notification");
                 // $mail->from(getenv('MAIL_FROM_ADDRESS'), "CMT_Notification");
                 // $mail->from('testwebcmt@gmail.com', 'Test_CMT');
                 $mail->to($email, $firstName);
                 $mail->subject($subject);
             });
 
-                   
+        //$token = JWTAuth::fromUser($user);
 
-            DB::commit();
-            return response()->json([
-                'success'=> true,
-                'message'=> 'You have successfully registered & Verification email sent Successfully.'
-                ]); 
-            }
-            catch (\Exception $e)
-            {
-                DB::rollback();
-               // report($e);
-                return response()->json([
-                    'success'=> false,
-                    'message'=> 'Something went wrong, try again.'
-                ]);
-            //$token = JWTAuth::fromUser($user);
+        //return response()->json(compact('user','token'),201);
+        return response()->json([
+            'success'=> true,
+            'message'=> 'You have successfully registered & Verification email sent Successfully.'
+        ]);
+    }
 
-            //return response()->json(compact('user','token'),201);
-            }
-        
-        }
+    // protected function registered(Request $request, $user)
+    // {
+    //     $user->generateToken();
+    //     return response()->json(['data' => $user->toArray()], 201);
+    // }
+
 
         /**
      * API Verify User
@@ -316,11 +302,11 @@ class UserController extends Controller
         $emailcheck = User::where('email',$email)->count();               
         if($emailcheck > 0)
         {        
-            return response()->json(['False'], 400);
+            return response()->json(['False'], 200);
         }
         else
         {
-            return response()->json(['True'], 400);
+            return response()->json(['True'], 200);
         }       
     
     }

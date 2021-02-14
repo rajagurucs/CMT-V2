@@ -68,5 +68,11 @@ Route::get('gethealth_programs/{id}', 'App\Http\Controllers\IrfController@gethea
 
 Route::post('irf_addHealth', 'App\Http\Controllers\IrfController@irf_addHealth');
 
+Route::get('programreport', 'App\Http\Controllers\ReportController@programReport');
+
+Route::get('goalreport', 'App\Http\Controllers\ReportController@goalReport');
+
+Route::get('notesreport', 'App\Http\Controllers\ReportController@notesReport');
+
 //Route::put('irf_update/{user_id}', 'App\Http\Controllers\IrfController@irf_update');
 

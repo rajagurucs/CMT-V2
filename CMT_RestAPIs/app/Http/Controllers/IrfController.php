@@ -172,6 +172,10 @@ class IrfController extends BaseController
                 'cmtAgent' => $request->json()->get('LoggedAgent'),
                 'userId' => $user->id
                ]);
+
+               $health = tb_init_user_health_details::create([
+                'userId' => $user->id
+               ]);
               
                DB::commit();
 
@@ -251,7 +255,8 @@ class IrfController extends BaseController
 
         // $HealthDetails = tb_init_user_extra_details::where('userId',$id)->get();
         $HealthDetails = DB::table('tb_init_user_extra_details')
-            ->join('tb_init_user_health_details', 'tb_init_user_extra_details.userId', '=', 'tb_init_user_health_details.userId')            
+            ->join('tb_init_user_health_details', 'tb_init_user_extra_details.userId', '=', 'tb_init_user_health_details.userId')
+            ->where ('tb_init_user_extra_details.userId',$id)            
             ->get();
 
 
@@ -451,51 +456,58 @@ class IrfController extends BaseController
     public function irf_updateGoal(Request $request)
     {
         
-        // $validator = Validator::make($request->json()->all() , [
-        //     'CategoryName' => 'required|string|max:255',
-        //     'ProgramName' => 'required|string|max:255',
-        //     'Location' => 'required|string|max:255',
-        //     'Instructor' => 'required|string|max:255',
-        //     'StartDate' => 'required|date_format:Y/m/d',
-        //     'EndDate' => 'required|date_format:Y/m/d',
-        //     'Status' => 'required|string|max:255',
-        //     'RatingBefore' => 'required|string|max:255',
+        $validator = Validator::make($request->json()->all(),
+        [
+            'CategoryName' => 'required|string|max:255',
+            'ProgramName' => 'required|string|max:255',
+            'Location' => 'required|string|max:255',
+            'Instructor' => 'required|string|max:255',
+            'StartDate' => 'required|date_format:Y/m/d',
+            'EndDate' => 'required|date_format:Y/m/d',
+            'Status' => 'required|string|max:255',
+            'RatingBefore' => 'required|string|max:255',
           
-        // ]);
+        ]);
 
-        // if($validator->fails())
-        //     {
-        //         return response()->json($validator->errors()->toJson(), 400);
-        //     } 
+        if($validator->fails())
+            {
+                return response()->json($validator->errors()->toJson(), 400);
+            } 
         
         $id= $request->json()->get('userId');
-        $goalUpdate= $request->json()->get('goal_update');
-
-        foreach($goalUpdate as $key => $title)
-        {
-            $goalid = $title['tb_user_details_goals_update_id'];            
+        $gid= $request->json()->get('tb_user_details_goals_update_id');
         
-        $user=tb_init_user_goals::where('userId',$id)
-        ->where('tb_user_details_goals_update_id',$goalid)
-                                ->update([
-            'user_goal_category_name' => $title['CategoryName'],
-            'user_goal_program_name' => $title['ProgramName'],
-            'user_goal_program_location' => $title['Location'],
-            'user_goal_program_instructor' => $title['Instructor'],
-            'user_goal_program_startdate' => $title['StartDate'],
-            'user_goal_program_enddate' => $title['EndDate'],
-            'user_goal_program_status' => $title['Status'],
-            'user_goal_program_participantcomments' => $title['ParticipantComments'],
-            'user_goal_program_additionalcomments' => $title['AdditionalComments'],
-            'user_goal_program_RatingBefore' => $title['RatingBefore'],
-            'user_goal_program_RatingAfter' => $title['RatingAfter']
+
+        $data= tb_init_user_goals::where('userId', $id)
+                                    ->where('tb_user_details_goals_update_id',$gid)
+                                    ->first();
+        if(!empty($data))
+        {
+            DB::table('tb_init_user_goals')->where('userId', $id)
+            ->where('tb_user_details_goals_update_id',$gid)
+            ->update([
+            'user_goal_category_name' => $request->json()->get('CategoryName'),
+            'user_goal_program_name' => $request->json()->get('ProgramName'),
+            'user_goal_program_location' => $request->json()->get('Location'),
+            'user_goal_program_instructor' => $request->json()->get('Instructor'),
+            'user_goal_program_startdate' => $request->json()->get('StartDate'),
+            'user_goal_program_enddate' => $request->json()->get('EndDate'),
+            'user_goal_program_status' => $request->json()->get('Status'),
+            'user_goal_program_participantcomments' => $request->json()->get('ParticipantComments'),
+            'user_goal_program_additionalcomments' => $request->json()->get('AdditionalComments'),
+            'user_goal_program_RatingBefore' => $request->json()->get('RatingBefore'),
+            'user_goal_program_RatingAfter' => $request->json()->get('RatingAfter')
             
         ]);
-                                }
+         
               // return response("Goals Added", 200);
-               return response()->json(['success'=> True,'message'=> 'User Goals Added Updated']);
+               return response()->json(['success'=> true,'message'=> 'User Goals Added Updated']);
+        }
+    else
+        {
+             return response()->json(['success'=> false,'message'=> 'Goal Not Available']);
+        } 
     }
-
     // public function irf_updateGoals($code)
     // {
     //     $check = DB::table('tb_init_user_goals')->where('tb_user_details_goals_update_id',$code)->first();
@@ -504,69 +516,72 @@ class IrfController extends BaseController
 
     public function getprogramdetails($id)
     {
-        $HealthResults = DB::Table('tb_init_user_program_details')
-                            ->select('programName')->where('userId',$id)
-                            ->where('category','health')
-                            ->pluck('programName');
+        $HealthResults = DB::Table('tb_init_user_program_details')->select('programName')->where('userId',$id)
+                                                                                        ->where('category','health')
+                                                                                        ->pluck('programName');
                                                                                        
 
-        $EmploymentResults = DB::Table('tb_init_user_program_details')
-                            ->select('programName')->where('userId',$id)
-                            ->where('category','employment')
-                            ->pluck('programName');
+        $EmploymentResults = DB::Table('tb_init_user_program_details')->select('programName')->where('userId',$id)
+                                                                                        ->where('category','employment')
+                                                                                        ->pluck('programName');
                                                                                       
         
-        $NeighbourhoodResults = DB::Table('tb_init_user_program_details')
-                                ->select('programName')->where('userId',$id)
-                                ->where('category','neighbourhood_net')
-                                ->pluck('programName');
+        $NeighbourhoodResults = DB::Table('tb_init_user_program_details')->select('programName')->where('userId',$id)
+                                                                                        ->where('category','neighbourhood')
+                                                                                        ->pluck('programName');
                                                                                        
                                                                                        
-        $StaffResults = DB::Table('tb_init_user_program_details')
-                            ->select('programName')->where('userId',$id)
-                            ->where('category','staff')
-                            ->pluck('programName');
+        $StaffResults = DB::Table('tb_init_user_program_details')->select('programName')->where('userId',$id)
+                                                                                        ->where('category','staff')
+                                                                                        ->pluck('programName');
                                                                                         
        
-        $AfterschoolResults = DB::Table('tb_init_user_program_details')
-                                ->select('programName')
-                                ->where('userId',$id)
-                                ->where('category','AfterSchool')
-                                ->pluck('programName');
-                                if(is_null($AfterschoolResults))
-                                {
-                                    $Afterschool = 'no';
-                                }
-                                else{
-                                    $Afterschool = 'yes';
-                                }
-                                
-        $search['HealthResults'] = $HealthResults;
-        $search['EmploymentResults'] = $EmploymentResults;
-        $search['NeighbourhoodResults'] = $NeighbourhoodResults;
-        $search['StaffResults'] = $StaffResults;
-        $search['AfterschoolResults'] = $Afterschool; 
+        $data1= tb_init_user_program_details::where('userId', $id)
+                                            ->where('category','AfterSchool')
+                                            ->first();
+           if(!empty($data1))
+                {
 
+                    $AfterschoolResults = DB::Table('tb_init_user_program_details')->where('userId',$id)
+                                                                                    ->where('category','AfterSchool')
+                                                                                    ->pluck('programName');
+                                                                                  
 
-        return response()->json([
-                            'success'=> true,
-                            'data' => $search
-                            ]);
+                    $search['HealthResults'] = $HealthResults;
+                    $search['EmploymentResults'] = $EmploymentResults;
+                    $search['NeighbourhoodResults'] = $NeighbourhoodResults;
+                    $search['StaffResults'] = $StaffResults;
+                    $search['AfterschoolResults'] = $AfterschoolResults; 
+                                                                                       
+                }
+                else
+                {
+                    $search['HealthResults'] = $HealthResults;
+                    $search['EmploymentResults'] = $EmploymentResults;
+                    $search['NeighbourhoodResults'] = $NeighbourhoodResults;
+                    $search['StaffResults'] = $StaffResults;
+                }
+                return response()->json([
+                                        'success'=> true,
+                                        'data' => $search
+                                        ]);
     }
 
     public function irf_deleteGoal(Request $request)
     {
         $id= $request->json()->get('userId');
-        
+        $gid= $request->json()->get('tb_user_details_goals_update_id');
         $program= $request->json()->get('ProgramName');
 
         $data1= tb_init_user_goals::where('userId', $id)
                                     ->where('user_goal_program_name',$program)
+                                    ->where('tb_user_details_goals_update_id',$gid)
                                     ->first();
         if(!empty($data1))
         {
              DB::table('tb_init_user_goals')->where('userId', $id)
                                             ->where('user_goal_program_name',$program)
+                                            ->where('tb_user_details_goals_update_id',$gid)
                                             ->delete();
             return response()->json(['success'=> true,'message'=> 'Goal Deleted']); 
         }
@@ -733,48 +748,48 @@ class IrfController extends BaseController
     $userId = $request->json()->get('userId'); 
     
 
-    $data= tb_init_user_health_details::where('userId', $userId)
-                                        ->first();
-        if(is_null($data))
-        {
+    // $data= tb_init_user_health_details::where('userId', $userId)
+    //                                     ->first();
+    //     if(is_null($data))
+    //     {
 
        
 
-       $user = tb_init_user_health_details::create([
+    //    $user = tb_init_user_health_details::create([
         
-        'myhealth_curr_state' => $request->json()->get('OverallHealth'),        
-        'mylifesatisfaction_curr_state' => $request->json()->get('LifeSatisfaction'),        
-        'mysocialnetwork_curr_state' => $request->json()->get('SocialNetwork'),
-        'mycommunitynetwork_curr_state' => $request->json()->get('CommunityConnection'),        
-        'mystresslevel_curr_state' => $request->json()->get('StressLevel'),        
-        'myhealthissues_curr_state' => $request->json()->get('PersonalHealthIssues'),        
-        'myfamilydoctor_curr_state' => $request->json()->get('FamilyDoctor'),
-        'myvisittofamilydoctor_curr_state' => $request->json()->get('FamilyDoctorVisit'),        
-        'myvisittoclinic_curr_state' => $request->json()->get('ClinicVisit'),
-        'myvisittoemergency_curr_state' => $request->json()->get('EmergencyVisit'),
-        'myvisittohospital_curr_state' => $request->json()->get('HospitalVisit'),        
-        'mydiseaseawareness_curr_state' => $request->json()->get('DiseasesAwareness'),        
-        'mycmtprogramawareness_curr_state' => $request->json()->get('CommunityAwareness'),        
-        'myphysicalactiveness_curr_state' => $request->json()->get('PhysicalActivity'),
-        //'cmtagent_curr' => $request->json()->get('cmtagent_curr'),
+    //     'myhealth_curr_state' => $request->json()->get('OverallHealth'),        
+    //     'mylifesatisfaction_curr_state' => $request->json()->get('LifeSatisfaction'),        
+    //     'mysocialnetwork_curr_state' => $request->json()->get('SocialNetwork'),
+    //     'mycommunitynetwork_curr_state' => $request->json()->get('CommunityConnection'),        
+    //     'mystresslevel_curr_state' => $request->json()->get('StressLevel'),        
+    //     'myhealthissues_curr_state' => $request->json()->get('PersonalHealthIssues'),        
+    //     'myfamilydoctor_curr_state' => $request->json()->get('FamilyDoctor'),
+    //     'myvisittofamilydoctor_curr_state' => $request->json()->get('FamilyDoctorVisit'),        
+    //     'myvisittoclinic_curr_state' => $request->json()->get('ClinicVisit'),
+    //     'myvisittoemergency_curr_state' => $request->json()->get('EmergencyVisit'),
+    //     'myvisittohospital_curr_state' => $request->json()->get('HospitalVisit'),        
+    //     'mydiseaseawareness_curr_state' => $request->json()->get('DiseasesAwareness'),        
+    //     'mycmtprogramawareness_curr_state' => $request->json()->get('CommunityAwareness'),        
+    //     'myphysicalactiveness_curr_state' => $request->json()->get('PhysicalActivity'),
+    //     //'cmtagent_curr' => $request->json()->get('cmtagent_curr'),
                  
-        'myhealth_curr_prog' => $request->json()->get('OverallHealth_prog'), 
-        'mylifesatisfaction_curr_prog' => $request->json()->get('LifeSatisfaction_prog'), 
-        'mysocialnetwork_curr_prog' => $request->json()->get('SocialNetwork_prog'), 
-        'mycommunitynetwork_curr_prog' => $request->json()->get('CommunityConnection_prog'), 
-        'mystresslevel_curr_prog' => $request->json()->get('StressLevel_prog'), 
-        'myhealthissues_curr_prog' => $request->json()->get('PersonalHealthIssues_prog'), 
-        'myfamilydoctor_curr_prog' => $request->json()->get('FamilyDoctor_prog'), 
-        'mydiseaseawareness_curr_prog' => $request->json()->get('DiseasesAwareness_prog'), 
-        'mycmtprogramawareness_curr_prog' => $request->json()->get('CommunityAwareness_prog'), 
-        'myphysicalactiveness_curr_prog' => $request->json()->get('PhysicalActivity_prog'), 
+    //     'myhealth_curr_prog' => $request->json()->get('OverallHealth_prog'), 
+    //     'mylifesatisfaction_curr_prog' => $request->json()->get('LifeSatisfaction_prog'), 
+    //     'mysocialnetwork_curr_prog' => $request->json()->get('SocialNetwork_prog'), 
+    //     'mycommunitynetwork_curr_prog' => $request->json()->get('CommunityConnection_prog'), 
+    //     'mystresslevel_curr_prog' => $request->json()->get('StressLevel_prog'), 
+    //     'myhealthissues_curr_prog' => $request->json()->get('PersonalHealthIssues_prog'), 
+    //     'myfamilydoctor_curr_prog' => $request->json()->get('FamilyDoctor_prog'), 
+    //     'mydiseaseawareness_curr_prog' => $request->json()->get('DiseasesAwareness_prog'), 
+    //     'mycmtprogramawareness_curr_prog' => $request->json()->get('CommunityAwareness_prog'), 
+    //     'myphysicalactiveness_curr_prog' => $request->json()->get('PhysicalActivity_prog'), 
 
-        'userId' => $request->json()->get('userId')            
-       ]);
+    //     'userId' => $request->json()->get('userId')            
+    //    ]);
 
-        }
-        else
-        {
+    //     }
+    //     else
+    //     {
             $data6=tb_init_user_health_details::where('userId',$userId)                                            
                                             ->update([
         'myhealth_curr_state' => $request->json()->get('OverallHealth'),        
@@ -804,7 +819,7 @@ class IrfController extends BaseController
         'myphysicalactiveness_curr_prog' => $request->json()->get('PhysicalActivity_prog'),
         ]);
 
-        }
+        // }
         return response()->json(['success'=> True,'message'=> 'User Health Details Added']);
     }
 
