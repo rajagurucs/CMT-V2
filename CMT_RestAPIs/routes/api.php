@@ -68,11 +68,40 @@ Route::get('gethealth_programs/{id}', 'App\Http\Controllers\IrfController@gethea
 
 Route::post('irf_addHealth', 'App\Http\Controllers\IrfController@irf_addHealth');
 
+//REPORTS @ ReportController
+
 Route::get('programreport', 'App\Http\Controllers\ReportController@programReport');
 
 Route::get('goalreport', 'App\Http\Controllers\ReportController@goalReport');
 
 Route::get('notesreport', 'App\Http\Controllers\ReportController@notesReport');
 
+Route::get('reportprograms', 'App\Http\Controllers\ReportController@returnprograms');
+
+Route::get('returncategory', 'App\Http\Controllers\ReportController@returncategory');
+
+Route::get('returnzipcode', 'App\Http\Controllers\ReportController@returnzipcode');
+
 //Route::put('irf_update/{user_id}', 'App\Http\Controllers\IrfController@irf_update');
 
+//SCHEDULE @ ScheduleController
+
+Route::post('add_schedule', 'App\Http\Controllers\ScheduleController@add_schedule');
+
+Route::get('schedules', 'App\Http\Controllers\ScheduleController@show_all');
+
+Route::get('schedules/{id}', 'App\Http\Controllers\ScheduleController@show');
+
+Route::get('schedulebydate/{StartDate}', 'App\Http\Controllers\ScheduleController@show_date');
+
+Route::put('update_schedule/{id}', 'App\Http\Controllers\ScheduleController@update_schedule');
+
+Route::delete('delete_schedule/{id}', 'App\Http\Controllers\ScheduleController@delete_schedule');
+
+//Admin Screen APIs @ AdminScreenController
+
+Route::post('add_adpgm', 'App\Http\Controllers\AdminScreenController@admin_addProgram');
+
+Route::get('show_adpgm', 'App\Http\Controllers\AdminScreenController@show_allprogram');
+
+Route::delete('delete_adpgm/{ProgramName}', 'App\Http\Controllers\AdminScreenController@delete_program');

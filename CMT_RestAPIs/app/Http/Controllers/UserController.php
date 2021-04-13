@@ -39,7 +39,7 @@ class UserController extends Controller
             'firstName' => 'required|string|max:255',
             'middleName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
-            'birthDate' => 'required|string|max:15',
+            'birthDate' => 'required|date_format:m/d/Y',
             'gender' => 'required|string|max:15',
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'required|string|max:20',            
@@ -121,6 +121,35 @@ class UserController extends Controller
             'success'=> true,
             'message'=> 'You have successfully registered & Verification email sent Successfully.'
         ]);
+    }
+
+    public function resendVerification($id) 
+    {
+        $user = User::where('id',$id)->firstOrFail();
+        if ($user->IsActive === 0)
+        {
+
+           $check = DB::table('user_verifications')->where('user_id',$user)->first();
+
+        $subject = "Please verify your email address. - CMT";
+        
+        Mail::send('email.verify', ['firstName' => $firstName, 'verification_code' => $check],
+            function($mail) use ($email, $firstName, $subject){
+                $mail->from(env('MAIL_FROM_ADDRESS'), "CMT_Notification");
+                $mail->to($email, $firstName);
+                $mail->subject($subject);
+            });
+
+            //email the user there key
+            //$mailer->sendEmailConfirmationTo($user);
+            $message = ('We just sent you the verification link at your email ('.$user->email.') again, please check it.');
+            // return view('auth.message')->with('message',$message);
+            return response()->json(['success'=> true, $message]);
+        }
+        else 
+        {
+            return response()->json(['success'=> false, 'message' => 'Your Email is already active, please contact us at" " if you have any problem.']);
+        }
     }
 
     // protected function registered(Request $request, $user)

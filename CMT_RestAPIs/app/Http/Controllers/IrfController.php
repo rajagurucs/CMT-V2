@@ -422,8 +422,8 @@ class IrfController extends BaseController
             'ProgramName' => 'required|string|max:255',
             'Location' => 'required|string|max:255',
             'Instructor' => 'required|string|max:255',
-            'StartDate' => 'required|date_format:Y/m/d',
-            'EndDate' => 'required|date_format:Y/m/d',
+            'StartDate' => 'required|date_format:m/d/Y',
+            'EndDate' => 'required|date_format:m/d/Y',
             'Status' => 'required|string|max:255',
             'RatingBefore' => 'required|string|max:255',
           
@@ -462,8 +462,8 @@ class IrfController extends BaseController
             'ProgramName' => 'required|string|max:255',
             'Location' => 'required|string|max:255',
             'Instructor' => 'required|string|max:255',
-            'StartDate' => 'required|date_format:Y/m/d',
-            'EndDate' => 'required|date_format:Y/m/d',
+            'StartDate' => 'required|date_format:m/d/Y',
+            'EndDate' => 'required|date_format:m/d/Y',
             'Status' => 'required|string|max:255',
             'RatingBefore' => 'required|string|max:255',
           

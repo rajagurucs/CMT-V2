@@ -15,7 +15,7 @@ class CreateTbCommunityProgramsTable extends Migration
     {
         Schema::create('tb_community_programs', function (Blueprint $table) {
             //$table->id();
-            $table->bigIncrements('programId');            
+            $table->bigIncrements('programId')->unique();            
             $table->string('programName');
             $table->string('category');
             $table->timestamps();

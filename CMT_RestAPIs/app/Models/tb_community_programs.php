@@ -13,6 +13,9 @@ class tb_community_programs extends Model
      *
      * @var array
      */
+    
+    protected $table = 'tb_community_programs';
+
     protected $fillable = [
         'programName',
         'category',
