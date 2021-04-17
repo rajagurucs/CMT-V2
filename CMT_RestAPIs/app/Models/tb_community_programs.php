@@ -18,7 +18,6 @@ class tb_community_programs extends Model
 
     protected $fillable = [
         'programName',
-        'category',
-                
+        'category'                
     ];
 }

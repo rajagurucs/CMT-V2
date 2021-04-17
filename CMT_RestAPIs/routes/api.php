@@ -24,7 +24,7 @@ Route::post('register', 'App\Http\Controllers\UserController@register');
 
 Route::post('login', 'App\Http\Controllers\UserController@login');
 
-Route::get('profile', 'App\Http\Controllers\UserController@getAuthenticatedUser');
+Route::post('profile', 'App\Http\Controllers\UserController@getAuthenticatedUser');
 
 Route::post('recover', 'App\Http\Controllers\UserController@recover');
 
@@ -104,4 +104,10 @@ Route::post('add_adpgm', 'App\Http\Controllers\AdminScreenController@admin_addPr
 
 Route::get('show_adpgm', 'App\Http\Controllers\AdminScreenController@show_allprogram');
 
-Route::delete('delete_adpgm/{ProgramName}', 'App\Http\Controllers\AdminScreenController@delete_program');
+Route::get('show_adcatego', 'App\Http\Controllers\AdminScreenController@show_allcategory');
+
+Route::delete('delete_adpgm', 'App\Http\Controllers\AdminScreenController@delete_program');
+
+Route::get('show_aduser', 'App\Http\Controllers\AdminScreenController@show_alluser');
+
+Route::delete('delete_aduser', 'App\Http\Controllers\AdminScreenController@delete_user');
