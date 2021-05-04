@@ -27,7 +27,7 @@ class CreateTbProgramSchedule extends Migration
             $table->timestamps();
 
             $table->foreign('UserID')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('ProgramID')->references('programId')->on('tb_community_programs')->onDelete('cascade');
+            // $table->foreign('ProgramID')->references('programId')->on('tb_community_programs')->onDelete('cascade');
         });
     }
 

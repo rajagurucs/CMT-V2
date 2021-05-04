@@ -26,6 +26,10 @@ Route::post('login', 'App\Http\Controllers\UserController@login');
 
 Route::post('profile', 'App\Http\Controllers\UserController@getAuthenticatedUser');
 
+Route::post('profileUpdate', 'App\Http\Controllers\UserController@profileUpdate');
+
+Route::post('changePassword', 'App\Http\Controllers\UserController@changePassword');
+
 Route::post('recover', 'App\Http\Controllers\UserController@recover');
 
 Route::group(['middleware' => ['jwt.auth']], function() {
@@ -111,3 +115,27 @@ Route::delete('delete_adpgm', 'App\Http\Controllers\AdminScreenController@delete
 Route::get('show_aduser', 'App\Http\Controllers\AdminScreenController@show_alluser');
 
 Route::delete('delete_aduser', 'App\Http\Controllers\AdminScreenController@delete_user');
+
+//File Upload & Download @ FileController
+
+Route::post('documents', 'App\Http\Controllers\FileController@store');
+
+Route::put('addgrade', 'App\Http\Controllers\FileController@addgrade');
+
+Route::put('deletefile', 'App\Http\Controllers\FileController@deleteFile');
+
+Route::get('displayfiles', 'App\Http\Controllers\FileController@displayfiles');
+
+Route::get('showprograms', 'App\Http\Controllers\FileController@showprograms');
+
+Route::put('subcribeprogram', 'App\Http\Controllers\FileController@SubscribeProgram');
+
+Route::put('unsubscribeprogram', 'App\Http\Controllers\FileController@UnSubscribeProgram');
+
+//Profile Picture @ ImageController
+
+Route::get('/', 'ImageController@create');
+
+Route::post('/', 'ImageController@store');
+
+Route::get('/{image}', 'ImageController@show');

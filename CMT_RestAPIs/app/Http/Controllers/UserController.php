@@ -324,6 +324,25 @@ class UserController extends Controller
         }
         return response()->json(compact('user'));
     }
+
+    public function profileUpdate()
+    {
+        $prof = users::findOrFail($id);
+        if($prof == NULL)
+        {
+            return response()->json(['success'=>false,'message'=>'data does not exist']);
+        }
+        $prof->update($request->all());
+
+        //return $task;
+
+        return response()->json($prof, 200);
+    }
+
+    public function changePassword()
+    {
+       
+    }
     
     public function checkemail(Request $request)
     {

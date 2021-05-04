@@ -30,7 +30,7 @@ class CreateTbInitUserExtraDetailsTable extends Migration
            $table->string('myDiseaseAwareness');
            $table->string('myCmtProgramAwareness');
            $table->string('myPhysicalActiveness');
-           $table->string('cmtAgent');
+           $table->string('cmtAgent')->nullable();
            
            $table->bigInteger('userId')->unsigned()->index();
            $table->foreign('userId')->references('userId')->on('tb_init_user_details')->onDelete('cascade');

@@ -91,12 +91,11 @@ class AdminScreenController extends Controller
             {
             $result[$title] = DB::table('users')
                 ->select('users.email') 
-                ->where('users.firstName','=',$title)
-                
-                ->get();
+                ->where('users.firstName','=',$title)                
+                // ->get();
                 // need to change as below
-                // ->pluck('users.email')
-                // ->toarray(); 
+                ->pluck('users.email')
+                ->toarray(); 
             }
             
             // return response( $result);
@@ -113,5 +112,6 @@ class AdminScreenController extends Controller
                             ->delete();
         
         return response()->json(['success'=> true,'message'=> 'user Deleted']);
-    }
+    }    
+
 }

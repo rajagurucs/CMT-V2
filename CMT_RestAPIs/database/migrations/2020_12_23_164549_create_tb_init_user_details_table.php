@@ -35,9 +35,9 @@ class CreateTbInitUserDetailsTable extends Migration
             $table->string('EmerContactNo');
             $table->string('aboutUs');
             $table->string('ChildValue');
-            $table->string('notes');
-            $table->string('notes_last_edited_byName');
-            $table->string('notes_last_edited_byRole');
+            $table->string('notes')->nullable();
+            $table->string('notes_last_edited_byName')->nullable();
+            $table->string('notes_last_edited_byRole')->nullable();
           
             $table->timestamps();
         });
