@@ -18,7 +18,7 @@ class CreateTbProgramFiles extends Migration
             $table->string('Program_Name');
             $table->string('Sentfrom');
             $table->string('FileName')->unique();
-            $table->string('UserType');
+            // $table->string('UserType');
             $table->string('File_Loc');
             $table->string('usergrade')->nullable();
             $table->string('agentcomments')->nullable();

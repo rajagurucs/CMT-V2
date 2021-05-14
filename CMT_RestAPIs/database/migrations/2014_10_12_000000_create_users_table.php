@@ -32,6 +32,8 @@ class CreateUsersTable extends Migration
             $table->string('postal');
             $table->boolean('IsActive')->default('0');
             $table->rememberToken();
+            $table->string('IRFuserId');
+            $table->string('profilepic');
             $table->timestamps();
         });
     }

@@ -19,7 +19,7 @@ class tb_program_files extends Model
         'Sentfrom',
         'FileName',
         'File_Loc',
-        'UserType',
+        
         'usergrade',
         'agentcomments',
         // 'notes_last_edited_byRole'

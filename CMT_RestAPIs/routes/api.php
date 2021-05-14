@@ -26,9 +26,11 @@ Route::post('login', 'App\Http\Controllers\UserController@login');
 
 Route::post('profile', 'App\Http\Controllers\UserController@getAuthenticatedUser');
 
-Route::post('profileUpdate', 'App\Http\Controllers\UserController@profileUpdate');
+Route::Post('profileUpdate', 'App\Http\Controllers\UserController@UpdateProfile');
 
-Route::post('changePassword', 'App\Http\Controllers\UserController@changePassword');
+Route::put('changePassword', 'App\Http\Controllers\UserController@changePassword');
+
+Route::post('forgot-password', 'App\Http\Controllers\UserController@forgot_password');
 
 Route::post('recover', 'App\Http\Controllers\UserController@recover');
 
@@ -118,24 +120,30 @@ Route::delete('delete_aduser', 'App\Http\Controllers\AdminScreenController@delet
 
 //File Upload & Download @ FileController
 
-Route::post('documents', 'App\Http\Controllers\FileController@store');
+Route::post('upload', 'App\Http\Controllers\FileController@store'); 
 
-Route::put('addgrade', 'App\Http\Controllers\FileController@addgrade');
+Route::post('addgrade', 'App\Http\Controllers\FileController@addgrade'); 
 
-Route::put('deletefile', 'App\Http\Controllers\FileController@deleteFile');
+Route::post('deletefile', 'App\Http\Controllers\FileController@deleteFile'); 
 
-Route::get('displayfiles', 'App\Http\Controllers\FileController@displayfiles');
+Route::get('displayfiles', 'App\Http\Controllers\FileController@displayfiles'); 
 
-Route::get('showprograms', 'App\Http\Controllers\FileController@showprograms');
+Route::get('getusertype', 'App\Http\Controllers\FileController@getUsertype'); 
 
-Route::put('subcribeprogram', 'App\Http\Controllers\FileController@SubscribeProgram');
+Route::get('showprograms', 'App\Http\Controllers\FileController@showprograms'); 
 
-Route::put('unsubscribeprogram', 'App\Http\Controllers\FileController@UnSubscribeProgram');
+Route::post('subcribeprogram', 'App\Http\Controllers\FileController@SubscribeProgram'); 
+
+Route::post('unsubscribeprogram', 'App\Http\Controllers\FileController@UnSubscribeProgram');
 
 //Profile Picture @ ImageController
 
-Route::get('/', 'ImageController@create');
+Route::post('store-pimg', 'App\Http\Controllers\ProfileImagesController@UploadProImg');
 
-Route::post('/', 'ImageController@store');
+Route::post('show-pimg', 'App\Http\Controllers\ProfileImagesController@ShowProImg');
 
-Route::get('/{image}', 'ImageController@show');
+// Route::get('/', 'ImageController@create');
+
+// Route::post('/', 'ImageController@store');
+
+// Route::get('/{image}', 'ImageController@show');

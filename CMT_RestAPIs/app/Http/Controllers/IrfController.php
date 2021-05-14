@@ -8,8 +8,17 @@ use App\Models\tb_init_user_program_details;
 use App\Models\tb_init_user_extra_details;
 use App\Models\tb_init_user_goals;
 use App\Models\tb_init_user_health_details;
-//use App\Models\tb_community_programs;
+use App\Models\tb_community_programs;
+use App\Models\User;
 
+//use JWTAuth;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Facades\JWTFactory;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Tymon\JWTAuth\PayloadFactory;
+use Tymon\JWTAuth\JWTManager as JWT;
+use Illuminate\Support\Str;
 
 use Illuminate\Http\Request;
 
@@ -22,10 +31,272 @@ use Illuminate\Support\Facades\Hash;
 use DB;
 use Illuminate\Routing\Controller as BaseController;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+
+//use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Mail\Message;
+
 class IrfController extends BaseController
 {
     //
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    // public function irf_register(Request $request)
+    // {
+    //     $validator = Validator::make($request->json()->all() , [
+    //         'firstName' => 'required|string|max:255',
+    //         'lastName' => 'required|string|max:255',
+    //         'streetAddress' => 'required|string|max:255',
+    //         'gender' => 'required|string|max:255',
+    //         'age' => 'required|string|max:255',
+    //         'city' => 'required|string|max:255',
+    //         'province' => 'required|string|max:255',
+    //         'country' => 'required|string|max:255',
+    //         'zipCode' => 'required|string|max:255',
+    //         'phoneCell' => 'required|string|max:255',
+    //         'email' => 'required|email|unique:tb_init_user_details,email|max:255',
+    //         'firstLang' => 'required|string|max:255',
+    //         'EmerContactName' => 'required|string|max:255',
+    //         'EmerContactNo' => 'required|string|max:255',
+    //         'aboutUs' => 'required|string|max:255',
+    //         'ChildValue' => 'required|string|max:255',
+    //         'myHealth' => 'required|string|max:255',
+    //         'myLifeSatisfaction' => 'required|string|max:255',
+    //         'mySocialNetwork' => 'required|string|max:255',
+    //         'myCommunityNetwork' => 'required|string|max:255',
+    //         'myStressLevel' => 'required|string|max:255',
+    //         'myHealthIssues' => 'required|string|max:255',
+    //         'myFamilyDoctor' => 'required|string|max:255',
+    //         'myVisitToFamilyDoctor' => 'required|string|max:255',
+    //         'myVisitToClinic' => 'required|string|max:255',
+    //         'myVisitToEmergency' => 'required|string|max:255',
+    //         'myVisitToHospital' => 'required|string|max:255',
+    //         'myDiseaseAwareness' => 'required|string|max:255',
+    //         'myCmtProgramAwareness' => 'required|string|max:255',
+    //         'myPhysicalActiveness' => 'required|string|max:255',
+            
+    //     ]);
+
+    //     if($validator->fails())
+    //         {
+    //             return response()->json($validator->errors()->toJson(), 400);
+    //         } 
+
+    //         DB::beginTransaction();
+
+    //     try{
+            
+
+    //     $user = tb_init_user_details::create([
+    //         'firstName' => $request->json()->get('firstName'),
+    //         'middleName' => $request->json()->get('middleName'),
+    //         'lastName' => $request->json()->get('lastName'),
+    //         'gender' => $request->json()->get('gender'),
+    //         'age' => $request->json()->get('age'),
+    //         'streetAddress' => $request->json()->get('streetAddress'),
+    //         'city' => $request->json()->get('city'),
+    //         'province' => $request->json()->get('province'),
+    //         'country' => $request->json()->get('country'),
+    //         'zipCode' => $request->json()->get('zipCode'),
+    //         'phoneHome' => $request->json()->get('phoneHome'),
+    //         'phoneCell' => $request->json()->get('phoneCell'),
+    //         'phoneWork' => $request->json()->get('phoneWork'),
+    //         'email' => $request->json()->get('email'),
+    //         'firstLang' => $request->json()->get('firstLang'),
+    //         'EmerContactName' => $request->json()->get('EmerContactName'),
+    //         'EmerContactNo' => $request->json()->get('EmerContactNo'),
+    //         'aboutUs' => $request->json()->get('aboutUs'),
+    //         'ChildValue' => $request->json()->get('ChildValue'),
+    //         'notes' => $request->json()->get('notes')            
+    //     ]);
+
+    //             $ChildDetails = $request->json()->get('child_program');
+                
+    //             foreach($ChildDetails as $key => $title)
+    //             {
+    //                 $data2 = new tb_child_details();
+    //                 $data2->childFirstname = $title['childFirstName'];
+    //                 $data2->childLastname = $title['childLastName'];
+    //                 $data2->childDob = $title['childBirthDate'];
+    //                 $data2->parentId = $user->id;
+    //                 $data2->save();
+    //             }
+    //           //    Link::insert($data2);
+            
+    //            // return response($data2, 200);
+
+                
+
+    //            $Programs = $request->json()->get('userprograms');
+              
+    //            foreach($Programs as $key => $title)
+    //            {
+    //                 foreach($title as $key2 => $val)
+    //                     {
+    //                              $checker2 = $val['isChecked'];
+    //                             if($checker2 == 'true')
+    //                                 { 
+    //                                     $data3 = new tb_init_user_program_details();
+    //                                     $data3->programName = $val['value'];
+    //                                     $data3->category = $key;
+    //                                     $data3->userId = $user->id;
+    //                                     $data3->save();
+    //                                 }
+    //                         }
+                            
+    //            }
+
+    //            $Afterschool = $request->json()->get('after_school_program');
+
+    //            if($Afterschool == 'yes')
+    //            {
+    //             $data4 = new tb_init_user_program_details();
+    //             $data4->programName = "AfterSchool";
+    //             $data4->category = "AfterSchool";
+    //             $data4->userId = $user->id;
+    //             $data4->save();
+    //            }
+
+    //            $other = $request->json()->get('Others');
+
+    //            if(!empty($other)) 
+    //            {
+    //             $data5 = new tb_init_user_program_details();
+    //             $data5->programName = $other;
+    //             $data5->category = "Other";
+    //             $data5->userId = $user->id;
+    //             $data5->save();
+    //            }
+                          
+    //            $memdetails = tb_init_user_extra_details::create([
+    //             'myHealth' => $request->json()->get('myHealth'),
+    //             'myLifeSatisfaction' => $request->json()->get('myLifeSatisfaction'),
+    //             'mySocialNetwork' => $request->json()->get('mySocialNetwork'),
+    //             'myCommunityNetwork' => $request->json()->get('myCommunityNetwork'),
+    //             'myStressLevel' => $request->json()->get('myStressLevel'),
+    //             'myHealthIssues' => $request->json()->get('myHealthIssues'),
+    //             'myFamilyDoctor' => $request->json()->get('myFamilyDoctor'),
+    //             'myVisitToFamilyDoctor' => $request->json()->get('myVisitToFamilyDoctor'),
+    //             'myVisitToClinic' => $request->json()->get('myVisitToClinic'),
+    //             'myVisitToEmergency' => $request->json()->get('myVisitToEmergency'),
+    //             'myVisitToHospital' => $request->json()->get('myVisitToHospital'),
+    //             'myDiseaseAwareness' => $request->json()->get('myDiseaseAwareness'),
+    //             'myCmtProgramAwareness' => $request->json()->get('myCmtProgramAwareness'),
+    //             'myPhysicalActiveness' => $request->json()->get('myPhysicalActiveness'),
+    //             'cmtAgent' => $request->json()->get('LoggedAgent'),
+    //             'userId' => $user->id
+    //            ]);
+
+    //            $health = tb_init_user_health_details::create([
+    //             'userId' => $user->id
+    //            ]);
+              
+    //            DB::commit();
+
+    //         } catch (Exception $e) {
+        
+    //           //  Log::warning(sprintf('Exception: %s', $e->getMessage()));
+        
+    //             DB::rollBack();
+    //         }
+    //            //Creating Array for Response
+             
+    //            $display = $user->id; 
+    //             return response()->json([
+    //                 'success'=> true,
+    //                 'id' => $display
+    //                 ]);
+    // }
+    // // public function irf_search(Request $request)
+    // //  {
+
+    // //     $data = $request->get('data');
+
+    // //     $search_users = Irf::where('id', 'like', "{$data}")
+    // //                      ->orWhere('firstname', 'like', "{$data}")
+    // //                      ->orWhere('email_id', 'like', "{$data}")
+    // //                      ->get();
+
+    // //     //return response::json(['data' => $search_users ]);     
+    // //     //return response()->json(['data' => $search_users], 400);
+    // //     return response()->json($search_users,200 );
+    // // } 
+
+    // public function irf_search($data)
+    // {
+    //   //  $userId = $request->json()->get('userId');
+
+    //  // $photos = tb_init_user_details::all();
+    //   //return response($photos, 200);
+        
+    //    // $user =  tb_init_user_details::where('userId', $userId)->first();
+    //    //$data = $request->json()->get('data');
+
+    //   // $data = $request->input('data', false);
+
+    //   $search_users = tb_init_user_details::where('userId',$data)
+    //   ->orwhere('email',$data)
+    //   ->first();
+     
+    //     //Checking whether the User Query returns value             
+    //     if(is_null($search_users)) 
+    //     {
+    //         return response()->json([
+    //                                 'success'=> false,
+    //                                 'message'=>'User Does Not Exist']);
+    //     }
+
+    //     else
+    //     {
+    //     //Storing the result in a Array
+    //     $resultArr = $search_users->toArray();
+    //     }       
+
+    //     //Getting the User Id from the Query
+    //     $id = $resultArr['userId'];
+
+    //     //Searching Child Details
+    //     $search_child = tb_child_details::where('parentId',$id)->get();
+
+    //     //  $resultArr2 = $search_child->toArray();
+
+    //     //Counting the rows returned
+    //     // $ChildCount = count($search_child );
+
+
+    //     $ProgramDetails = tb_init_user_program_details::where('userId',$id)->get();
+
+
+    //     // $HealthDetails = tb_init_user_extra_details::where('userId',$id)->get();
+    //     $HealthDetails = DB::table('tb_init_user_extra_details')
+    //         ->join('tb_init_user_health_details', 'tb_init_user_extra_details.userId', '=', 'tb_init_user_health_details.userId')
+    //         ->where ('tb_init_user_extra_details.userId',$id)            
+    //         ->get();
+
+
+
+    //     $GoalDetails = tb_init_user_goals::where('userId',$id)->get();
+
+    //     // //Creating Array for Response
+    //     $search['User_Details'] = $search_users;
+    //     $search['Child_Details'] = $search_child;
+    //     $search['GoalDetails'] = $GoalDetails;
+    //     $search['Program_Details'] = $ProgramDetails;
+    //     $search['Health_Details'] = $HealthDetails;
+
+    //     // $users = DB::table('tb_init_user_extra_details')
+    //     //     ->join('tb_init_user_health_details', 'tb_init_user_extra_details.userId', '=', 'tb_init_user_health_details.userId')            
+    //     //     ->get();
+
+    //     //return response($search,200);
+    //     //return response()->json($search, 200);
+    //     return response()->json([
+    //                             'success'=> true,
+    //                             'data'=>$search
+    //                             ]);
+    // }
 
     public function irf_register(Request $request)
     {
@@ -107,11 +378,7 @@ class IrfController extends BaseController
                     $data2->parentId = $user->id;
                     $data2->save();
                 }
-              //    Link::insert($data2);
-            
-               // return response($data2, 200);
-
-                
+                            
 
                $Programs = $request->json()->get('userprograms');
               
@@ -177,109 +444,85 @@ class IrfController extends BaseController
                 'userId' => $user->id
                ]);
               
-               DB::commit();
-
-            } catch (Exception $e) {
-        
-              //  Log::warning(sprintf('Exception: %s', $e->getMessage()));
-        
-                DB::rollBack();
-            }
-               //Creating Array for Response
-             
-               $display = $user->id; 
-                return response()->json([
-                    'success'=> true,
-                    'id' => $display
-                    ]);
-    }
-    // public function irf_search(Request $request)
-    //  {
-
-    //     $data = $request->get('data');
-
-    //     $search_users = Irf::where('id', 'like', "{$data}")
-    //                      ->orWhere('firstname', 'like', "{$data}")
-    //                      ->orWhere('email_id', 'like', "{$data}")
-    //                      ->get();
-
-    //     //return response::json(['data' => $search_users ]);     
-    //     //return response()->json(['data' => $search_users], 400);
-    //     return response()->json($search_users,200 );
-    // } 
-
-    public function irf_search($data)
-    {
-      //  $userId = $request->json()->get('userId');
-
-     // $photos = tb_init_user_details::all();
-      //return response($photos, 200);
-        
-       // $user =  tb_init_user_details::where('userId', $userId)->first();
-       //$data = $request->json()->get('data');
-
-      // $data = $request->input('data', false);
-
-      $search_users = tb_init_user_details::where('userId',$data)
-      ->orwhere('email',$data)
-      ->first();
-     
-        //Checking whether the User Query returns value             
-        if(is_null($search_users)) 
-        {
-            return response()->json([
-                                    'success'=> false,
-                                    'message'=>'User Does Not Exist']);
-        }
-
-        else
-        {
-        //Storing the result in a Array
-        $resultArr = $search_users->toArray();
-        }       
-
-        //Getting the User Id from the Query
-        $id = $resultArr['userId'];
-
-        //Searching Child Details
-        $search_child = tb_child_details::where('parentId',$id)->get();
-
-        //  $resultArr2 = $search_child->toArray();
-
-        //Counting the rows returned
-        // $ChildCount = count($search_child );
 
 
-        $ProgramDetails = tb_init_user_program_details::where('userId',$id)->get();
+//User Register down
+
+                    $defaultpwd ="Cmt123";
+
+                    $firstName = $request->json()->get('firstName');
+                    $middleName =  $request->json()->get('middleName');
+                    $lastName = $request->json()->get('lastName');
+                //    $birthDate = $request->birthDate;
+                    $gender = $request->json()->get('gender');
+                    $email = $request->json()->get('email');
+                    $phone = $request->json()->get('phoneCell');
+                    $password = $defaultpwd;
+                    $roleType = "Participant";
+                    $country =  $request->json()->get('country');
+                    $province = $request->json()->get('province');
+                    $city = $request->json()->get('city');
+                    $postal = $request->json()->get('zipCode');
+            
+                    $user2 = User::create([
+                                            'firstName' => $firstName,
+                                            'middleName' => $middleName,
+                                            'lastName' => $lastName,
+                                            // 'birthDate' => $birthDate,
+                                            'gender' => $gender,
+                                            'email' => $email,
+                                            'phone' => $phone,
+                                            'password' => Hash::make($password),
+                                            'roleType' => $roleType,
+                                            'country' => $country,
+                                            'province' => $province,
+                                            'city' => $city,
+                                            'postal' => $postal,
+                                            'IRFuserId' => $user->id
+                                        ]);
+            
+                
+                    $verification_code = str::random(30); //Generate verification code
+            
+                    DB::table('user_verifications')->insert(['user_id'=>$user2->id,'token'=>$verification_code]);
+            
+                    // $subject = "Please verify your email address. - CMT";
+                    
+                    // Mail::send('email.verify', ['firstName' => $firstName, 'verification_code' => $verification_code],
+                    //     function($mail) use ($email, $firstName, $subject){
+                    //         $mail->from(env('MAIL_FROM_ADDRESS'), "CMT_Notification");
+                    //         // $mail->from(getenv('MAIL_FROM_ADDRESS'), "CMT_Notification");
+                    //         // $mail->from('testwebcmt@gmail.com', 'Test_CMT');
+                    //         $mail->to($email, $firstName);
+                    //         $mail->subject($subject);
+                    //     });
+            
+                    //$token = JWTAuth::fromUser($user);
+            
+                    //return response()->json(compact('user','token'),201);
+                    // return response()->json([
+                    //     'success'=> true,
+                    //     'message'=> 'You have successfully registered & Verification email sent Successfully.'
+                    // ]);
 
 
-        // $HealthDetails = tb_init_user_extra_details::where('userId',$id)->get();
-        $HealthDetails = DB::table('tb_init_user_extra_details')
-            ->join('tb_init_user_health_details', 'tb_init_user_extra_details.userId', '=', 'tb_init_user_health_details.userId')
-            ->where ('tb_init_user_extra_details.userId',$id)            
-            ->get();
+                    DB::commit();
 
+                } catch (Exception $e) {
+            
+                  //  Log::warning(sprintf('Exception: %s', $e->getMessage()));
+            
+                    DB::rollBack();
+                }
+                   //Creating Array for Response
+                 
+                   $display = $user->id; 
 
-
-        $GoalDetails = tb_init_user_goals::where('userId',$id)->get();
-
-        // //Creating Array for Response
-        $search['User_Details'] = $search_users;
-        $search['Child_Details'] = $search_child;
-        $search['GoalDetails'] = $GoalDetails;
-        $search['Program_Details'] = $ProgramDetails;
-        $search['Health_Details'] = $HealthDetails;
-
-        // $users = DB::table('tb_init_user_extra_details')
-        //     ->join('tb_init_user_health_details', 'tb_init_user_extra_details.userId', '=', 'tb_init_user_health_details.userId')            
-        //     ->get();
-
-        //return response($search,200);
-        //return response()->json($search, 200);
-        return response()->json([
-                                'success'=> true,
-                                'data'=>$search
-                                ]);
+                    return response()->json([
+                        'success'=> true,
+                        'id' => $display,
+                        'Message' => 'Verification email sent Successfully to the Participant'
+                    ],200);
     }
 
     public function irf_userUpdate(Request $request)
