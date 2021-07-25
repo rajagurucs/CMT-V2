@@ -18,7 +18,7 @@ class tb_program_schedule extends Model
 
     protected $fillable = [
         //Basic Details
-        'ProgramID',
+        'ProgramName',
         'Title',
         'UserID',
         'StartDate',

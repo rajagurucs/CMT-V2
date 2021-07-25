@@ -486,20 +486,21 @@ class IrfController extends BaseController
             
                     DB::table('user_verifications')->insert(['user_id'=>$user2->id,'token'=>$verification_code]);
             
-                    // $subject = "Please verify your email address. - CMT";
+                    $subject = "Please verify your email address. - CMT";
                     
-                    // Mail::send('email.verify', ['firstName' => $firstName, 'verification_code' => $verification_code],
-                    //     function($mail) use ($email, $firstName, $subject){
-                    //         $mail->from(env('MAIL_FROM_ADDRESS'), "CMT_Notification");
-                    //         // $mail->from(getenv('MAIL_FROM_ADDRESS'), "CMT_Notification");
-                    //         // $mail->from('testwebcmt@gmail.com', 'Test_CMT');
-                    //         $mail->to($email, $firstName);
-                    //         $mail->subject($subject);
-                    //     });
+                    Mail::send('email.verify', ['firstName' => $firstName, 'verification_code' => $verification_code],
+                        function($mail) use ($email, $firstName, $subject){
+                            $mail->from(env('MAIL_FROM_ADDRESS'), "CMT_Notification");
+                            // $mail->from(getenv('MAIL_FROM_ADDRESS'), "CMT_Notification");
+                            // $mail->from('testwebcmt@gmail.com', 'Test_CMT');
+                            $mail->to($email, $firstName);
+                            $mail->subject($subject);
+                        });
             
                     //$token = JWTAuth::fromUser($user);
             
                     //return response()->json(compact('user','token'),201);
+                    
                     // return response()->json([
                     //     'success'=> true,
                     //     'message'=> 'You have successfully registered & Verification email sent Successfully.'

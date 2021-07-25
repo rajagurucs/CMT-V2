@@ -34,6 +34,7 @@ class CreateUsersTable extends Migration
             $table->rememberToken();
             $table->string('IRFuserId');
             $table->string('profilepic');
+            $table->string('About')->nullable();
             $table->timestamps();
         });
     }

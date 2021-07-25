@@ -45,12 +45,12 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
+            'url' => env('https://ap-south-1.console.aws.amazon.com/rds/home?region=ap-south-1#dbinstances:id=aaq7b39hpi9348'),
+            'host' => env('DB_HOST', 'aaq7b39hpi9348.crn8zdz9xzgv.ap-south-1.rds.amazonaws.com'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME', 'forge'),
-            'password' => env('DB_PASSWORD', ''),
+            'database' => env('DB_DATABASE', 'cmt'),
+            'username' => env('DB_USERNAME', 'rootdb'),
+            'password' => env('DB_PASSWORD', 'Arun1234'),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',

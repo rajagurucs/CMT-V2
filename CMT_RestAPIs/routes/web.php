@@ -21,8 +21,6 @@ Route::get('user/verify/{verification_code}', 'App\Http\Controllers\UserControll
 
 Route::get('user/verify/resend/{id}', 'App\Http\Controllers\UserController@resendVerification');
 
-Route::get('forget-password', 'App\Http\Controllers\ForgotPasswordController@getEmail');
-Route::post('forget-password', 'App\Http\Controllers\ForgotPasswordController@postEmail');
+Route::get('pwd/reset/{token}', 'App\Http\Controllers\UserController@resendVerification'); /// to do
 
-//Route::get('password/reset/{token}', 'Auth\ResetPasswordController@showResetForm')->name('password.request');
-//Route::post('password/reset', 'Auth\ResetPasswordController@postReset')->name('password.reset');
+Route::view('forgot_password', 'auth.reset_password')->name('password.reset');

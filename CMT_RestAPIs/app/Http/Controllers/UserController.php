@@ -60,19 +60,19 @@ class UserController extends Controller
         if($validator->fails()){
                 return response()->json($validator->errors()->toJson(), 400);
         }
-        $firstName = $request->firstName;
-        $middleName = $request->middleName;
-        $lastName = $request->lastName;
-        $birthDate = $request->birthDate;
-        $gender = $request->gender;
-        $email = $request->email;
-        $phone = $request->phone;
-        $password = $request->password;
-        $roleType = $request->roleType;
-        $country = $request->country;
-        $province = $request->province;
-        $city = $request->city;
-        $postal = $request->postal;
+        $firstName = $request->json()->get('firstName');
+        $middleName = $request->json()->get('middleName');
+        $lastName = $request->json()->get('lastName');
+        $birthDate = $request->json()->get('birthDate');  
+        $gender = $request->json()->get('gender');
+        $email = $request->json()->get('email');
+        $phone = $request->json()->get('phone');
+        $password = $request->json()->get('password');
+        $roleType = $request->json()->get('roleType');
+        $country = $request->json()->get('country');
+        $province = $request->json()->get('province');
+        $city = $request->json()->get('city');
+        $postal = $request->json()->get('postal');
 
         $user = User::create([
                                 'firstName' => $firstName,
@@ -189,9 +189,9 @@ class UserController extends Controller
             
             // $datetime = \Carbon\Carbon::createFromFormat('m d Y H:i A', "02 08 2012 10:09PM");
 
-            $user->update(['IsActive' => 1]);
-            //$user->update(['updated_at' => now()]);
-            //$user->update(['email_verified_at' => now()]);
+            $user->update(['IsActive' => 1,'email_verified_at' => Carbon::now()]);           
+            
+
             DB::table('user_verifications')->where('token',$verification_code)->delete();
 
             // return response()->json([
@@ -288,41 +288,25 @@ class UserController extends Controller
      */
     public function recover(Request $request)
     {
-        // $user = User::where('email', $request->email)->first();
-        // if (!$user) 
-        // {
-        //     $error_message = "Your email address was not found.";
-        //     return response()->json(['success' => false, 'error' => ['email'=> $error_message]], 401);
-        // }
-        // try 
-        // {
-        //     Password::sendResetLink($request->only('email'), function (Message $message) 
-        //     {
-        //         $message->subject('Your Password Reset Link');
-        //     });
-        // } 
-        // catch (\Exception $e) 
-        // {
-        //     //Return with error
-        //     $error_message = $e->getMessage();
-        //     return response()->json(['success' => false, 'error' => $error_message], 401);
-        // }
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            $error_message = "Your email address was not found.";
+            return response()->json(['success' => false, 'error' => ['email'=> $error_message]], 401);
+        }
 
-        // return response()->json([
-        //     'success' => true, 'data'=> ['message'=> 'A reset email has been sent! Please check your email.']
-        // ]);
-        $this->validate($request, ['email' => 'required']);
+        try {
+            Password::sendResetLink($request->only('email'), function (Message $message) {
+                $message->subject('Your Password Reset Link');
+            });
+        } catch (\Exception $e) {
+            //Return with error
+            $error_message = $e->getMessage();
+            return response()->json(['success' => false, 'error' => $error_message], 401);
+        }
 
-        // $this->validateEmail($request);
-
-    // We will send the password reset link to this user. Once we have attempted
-    // to send the link, we will examine the response then see the message we
-    // need to show to the user. Finally, we'll send out a proper response.
-    $response = $this->broker()->sendResetLink(
-        $request->only('email')
-    );
-
-    return back()->with('status', "If you've provided registered e-mail, you should get recovery e-mail shortly.");
+        return response()->json([
+            'success' => true, 'data'=> ['message'=> 'A reset email has been sent! Please check your email.']
+        ]);
     }
 
     
@@ -343,41 +327,216 @@ class UserController extends Controller
         return response()->json(compact('user'));
     }
 
-    // public function profileUpdate(Request $request)
-    // {
-    //     // $prof = users::find($id);
+    public function addAbout(Request $request)
+    {
+        // $prof = users::find($id);
 
-    //     // $prof->firstName = $request->input('firstName');
-    //     // $prof->middleName = $request->input('middleName');
-    //     // $prof->lastName = $request->input('lastName');
-    //     // $prof->birthDate = $request->input('birthDate');
-    //     // $prof->gender = $request->input('gender');
-    //     // $prof->email = $request->input('email');
-    //     // $prof->phone = $request->input('phone');
-    //     // $prof->password = $request->input('password');
-    //     // $prof->roleType = $request->input('roleType');
-    //     // $prof->country = $request->input('country');
-    //     // $prof->province = $request->input('province');
-    //     // $prof->city = $request->input('city');
-    //     // $prof->postal = $request->input('postal');
+        // $prof->firstName = $request->input('firstName');
+        // $prof->middleName = $request->input('middleName');
+        // $prof->lastName = $request->input('lastName');
+        // $prof->birthDate = $request->input('birthDate');
+        // $prof->gender = $request->input('gender');
+        // $prof->email = $request->input('email');
+        // $prof->phone = $request->input('phone');
+        // $prof->password = $request->input('password');
+        // $prof->roleType = $request->input('roleType');
+        // $prof->country = $request->input('country');
+        // $prof->province = $request->input('province');
+        // $prof->city = $request->input('city');
+        // $prof->postal = $request->input('postal');
         
-    //     // $prof->save();
+        // $prof->save();
 
-    //     // return "Sucess updating user #" . $prof->id;
+        // return "Sucess updating user #" . $prof->id;
+
+        $validator = Validator::make($request->json()->all() , [
+            'About' => 'required|string|max:255',
+              
+        ]);
+
+        if($validator->fails())
+        {
+            return response()->json($validator->errors()->toJson(), 400);
+        } 
+
+        $email= $request->json()->get('email');
+        
+        $user=User::where('email',$email)
+                            ->update([
+            'About' => $request->json()->get('About')            
+        ]);
+        if(!empty($user))
+        {
+            return response()->json(['success'=> true,'message'=> 'User Profile Updated']);
+
+            // 'password' => Hash::make($password),
+        }              
+        else
+        {
+             return response()->json(['success'=> false,'message'=> 'User Profile Not Available']);
+        } 
+    }
+
+    public function UpdateProfileInfo(Request $request)
+    {
+        $validator = Validator::make($request->json()->all() , [
+            'firstName' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'province' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
+            'zipCode' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
+        ]);
+
+        $data = $request->json()->get('email');
+        $irfcheck = tb_init_user_details::select('userId')
+                                            ->where('email',$data)
+                                            ->first();
+            if(is_null($irfcheck))
+            {                   
+                $user=user::where('email',$data)
+                            ->update([
+                            'firstName' => $request->json()->get('firstName'),
+                            'middleName' => $request->json()->get('middleName'),
+                            'lastName' => $request->json()->get('lastName'),
+                            'city' => $request->json()->get('city'),
+                            'province' => $request->json()->get('province'),
+                            'country' => $request->json()->get('country'),
+                            'postal' => $request->json()->get('zipCode'),
+                            'phone' => $request->json()->get('phone'),
+                             ]);   
+
+                return response()->json(['success' => true, 
+                                        'message' => 'Profile successfully updated', 
+                                        'document' => $data], 200);                            
+
+            }
+            else                     
+            {
+
+                $user=user::where('email',$data)
+                            ->update([
+                                    'firstName' => $request->json()->get('firstName'),
+                                    'middleName' => $request->json()->get('middleName'),
+                                    'lastName' => $request->json()->get('lastName'),
+                                    'city' => $request->json()->get('city'),
+                                    'province' => $request->json()->get('province'),
+                                    'country' => $request->json()->get('country'),
+                                    'postal' => $request->json()->get('zipCode'),
+                                    'phone' => $request->json()->get('phone'),
+                                    ]);
+
+                $user2=tb_init_user_details::where('email',$data)
+                                ->update([
+                                        'firstName' => $request->json()->get('firstName'),
+                                        'middleName' => $request->json()->get('middleName'),
+                                        'lastName' => $request->json()->get('lastName'),
+                                        'city' => $request->json()->get('city'),
+                                        'province' => $request->json()->get('province'),
+                                        'country' => $request->json()->get('country'),
+                                        'zipCode' => $request->json()->get('zipCode'),
+                                        'phoneCell' => $request->json()->get('phone')                               
+                                        ]);          
+
+                return response()->json(['success' => true, 
+                                        'message' => 'Profile and IRF successfully Updated', 
+                                        'document' => $data], 200);                                   
+
+            }
+        // else
+        // {
+        //      return response()->json(['success'=> false,'message'=> 'User Profile Not Available']);
+        // }                              
+
+    } 
+
+    public function UpdateProfilepic(Request $request)
+    {
+        $validator = Validator::make($request->all() , [
+                "email" => 'required',
+                'document' => 'required|mimes:png,jpg,jpeg|max:999',
+        ]); 
+
+        $data = $request->get('email'); 
+
+        $base_location = 'user_profilepics';             
+
+        $documentPath = $request->file('document')->store($base_location, 's3'); 
+
+        $docpath1 = "https://cmtassignmentfiles.s3.ap-south-1.amazonaws.com/"; 
+
+        $docpath = $docpath1.$documentPath;  
+
+        $user=user::where('email',$data)
+                    ->update([
+                            'profilepic' => $docpath
+                            ]);  
+        if(!empty($user))
+        { 
+        return response()->json(['success' => true, 
+                                'message' => 'Profile pic successfully updated', 
+                                'document' => $docpath], 200);
+        }
+        else
+        {
+            return response()->json(['success'=> false,'message'=> 'User Profile Not Available']);
+        } 
+    }
+
+    // public function prof_update(Request $request)
+    // {
     //     $validator = Validator::make($request->json()->all() , [
-    //         'firstName' => 'required|string|max:255',
-    //         'middleName' => 'required|string|max:255',
-    //         'lastName' => 'required|string|max:255',
-    //         'birthDate' => 'required|string|max:255',
-    //         'gender' => 'required|string|max:255',
-    //         'email' => 'required|email|max:255',
-    //         'phone' => 'required|string|max:15',
-    //         'password' => 'required|string|max:255',
-    //         'roleType' => 'required|string|max:255',
-    //         'country' => 'required|string|max:255',
-    //         'province' => 'required|string|max:255',
-    //         'city' => 'required|string|max:255',
-    //         'postal' => 'required|string|max:255',
+    //                 'firstName' => 'required|string|max:255',
+    //                 'middleName' => 'required|string|max:255',
+    //                 'lastName' => 'required|string|max:255',
+    //                 'birthDate' => 'required|date_format:m/d/Y',
+    //                 'gender' => 'required|string|max:15',
+    //                 // 'email' => 'required|email|max:255',
+    //                 'phone' => 'required|string|max:15',
+    //                 // 'password' => 'required|string|max:255',
+    //                 // 'roleType' => 'required|string|max:255',
+    //                 'country' => 'required|string|max:255',
+    //                 'province' => 'required|string|max:255',
+    //                 'city' => 'required|string|max:255',
+    //                 'postal' => 'required|string|max:255',
+                      
+    //             ]);
+        
+    //             if($validator->fails())
+    //             {
+    //                 return response()->json($validator->errors()->toJson(), 400);
+    //             } 
+        
+    //             $email= $request->json()->get('email');
+                
+    //             $user=User::where('email',$email)
+    //                                 ->update([
+    //                 'firstName' => $request->json()->get('firstName'),
+    //                 'middleName' => $request->json()->get('middleName'),
+    //                 'lastName' => $request->json()->get('lastName'),
+    //                 'birthDate' => $request->json()->get('birthDate'),
+    //                 'gender' => $request->json()->get('gender'),
+    //                 // 'email' => $request->json()->get('email'),
+    //                 'phone' => $request->json()->get('phone'),
+    //                 // 'password' => Hash::make($request->json()->get('password')),
+    //                 // 'roleType' => $request->json()->get('roleType'),
+    //                 'country' => $request->json()->get('country'),
+    //                 'province' => $request->json()->get('province'),
+    //                 'city' => $request->json()->get('city'),
+    //                 'postal' => $request->json()->get('postal')            
+    //             ]);
+    //                 return response()->json(['success'=> true,'message'=> 'User Profile Updated']);
+        
+    //                 // 'password' => Hash::make($password),
+    //         }
+        
+    // }
+    
+    // public function addPic(Request $request)
+    // {
+    //     $validator = Validator::make($request->json()->all() , [
+    //         'profilepic' => 'required|string|max:255',
               
     //     ]);
 
@@ -390,24 +549,21 @@ class UserController extends Controller
         
     //     $user=User::where('id',$id)
     //                         ->update([
-    //         'firstName' => $request->json()->get('firstName'),
-    //         'middleName' => $request->json()->get('middleName'),
-    //         'lastName' => $request->json()->get('lastName'),
-    //         'birthDate' => $request->json()->get('birthDate'),
-    //         'gender' => $request->json()->get('gender'),
-    //         'email' => $request->json()->get('email'),
-    //         'phone' => $request->json()->get('phone'),
-    //         'password' => Hash::make($request->json()->get('password')),
-    //         'roleType' => $request->json()->get('roleType'),
-    //         'country' => $request->json()->get('country'),
-    //         'province' => $request->json()->get('province'),
-    //         'city' => $request->json()->get('city'),
-    //         'postal' => $request->json()->get('postal')            
+    //         'profilepic' => $request->json()->get('profilepic')            
     //     ]);
-    //         return response()->json(['success'=> true,'message'=> 'User Profile Updated']);
+    //     if(!empty($user))
+    //     {
+    //         return response()->json(['success'=> true,'message'=> 'Profile picture changed']);
 
     //         // 'password' => Hash::make($password),
+    //                         }              
+    //         else
+    //     {
+    //          return response()->json(['success'=> false,'message'=> 'User Profile Not Available']);
+    //     } 
     // }
+    
+
 
     public function UpdateProfile(Request $request)
     {
@@ -568,29 +724,65 @@ class UserController extends Controller
             }     
     }
 
-    public function changePassword()
-    {
-        $validator = Validator::make($request->json()->all() , [
-            'email' => 'required|string|max:255',
-            'old_password' => 'required|string|max:255',
-            'new_password' => 'required|string|max:255',
+    // public function changePassword(Request $request)
+    // {
+    //     $validator = Validator::make($request->json()->all() , [
+    //         'email' => 'required|string|max:255',
+    //         'current_password' => 'required|string|max:255',
+    //         'new_password' => 'required|string|max:255',
               
+    //     ]);
+
+    //     if($validator->fails())
+    //     {
+    //         return response()->json($validator->errors()->toJson(), 400);
+    //     } 
+
+    //     $email= $request->json()->get('email');
+        
+        // $user=User::where('email',$email)
+        //                     ->where('password','old_password')
+        //                     ->update([
+        //     'password' => Hash::make($request->json()->get('new_password'))                        
+        // ]);
+        //     return response()->json(['success'=> true,'message'=> 'Password Changed']);
+       
+    // }
+
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->json()->all(),
+        [
+            'email' => 'required|string|max:255',
+            // 'password' => 'required|string|max:255',
+            'new_password' => 'required|string|max:10',          
         ]);
 
         if($validator->fails())
-        {
-            return response()->json($validator->errors()->toJson(), 400);
-        } 
-
-        $email= $request->json()->get('email');
+            {
+                return response()->json($validator->errors()->toJson(), 400);
+            } 
         
-        $user=User::where('email',$email)
-                            ->where('password','old_password')
-                            ->update([
-            'password' => Hash::make($request->json()->get('new_password'))                        
-        ]);
-            return response()->json(['success'=> true,'message'=> 'Password Changed']);
-       
+        $email= $request->json()->get('email');
+        // $password= $request->json()->get('password');
+        $new_password= $request->json()->get('new_password');
+        
+
+        $data= User::where('email', $email)
+                                    // ->where('password',$password)
+                                    ->first();
+        if(!empty($data))
+        {
+            DB::table('users')->where('email', $email)
+            // ->where('password',$password)
+            ->update(['password' => Hash::make($request->json()->get('new_password'))]);
+         
+               return response()->json(['success'=> true,'message'=> 'Password changed']);
+        }
+    else
+        {
+             return response()->json(['success'=> false,'message'=> 'Invalid details.!please try again.']);
+        }
     }
     
     public function checkemail(Request $request)
@@ -609,16 +801,19 @@ class UserController extends Controller
     }
 
     public function forgot_password(Request $request)
-{
-    $input = $request->all();
-    $rules = array(
-        'email' => "required|email",
-    );
-    $validator = Validator::make($input, $rules);
-    if ($validator->fails()) {
-        $arr = array("status" => 400, "message" => $validator->errors()->first(), "data" => array());
-    } else {
-        try {
+    {
+        $input = $request->all();
+        $rules = array(
+            'email' => "required|email",
+        );
+        $validator = Validator::make($input, $rules);
+        if ($validator->fails()) {
+            $arr = array("status" => 400, "message" => $validator->errors()->first(), "data" => array());
+        } 
+        else 
+        {
+        try 
+        {
             $response = Password::sendResetLink($request->only('email'), function (Message $message) {
                 $message->subject($this->getEmailSubject());
             });
@@ -635,5 +830,5 @@ class UserController extends Controller
         }
     }
     return \Response::json($arr);
-}
+    }
 }

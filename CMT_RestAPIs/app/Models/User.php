@@ -36,6 +36,7 @@ class User extends Authenticatable  implements JWTSubject
         'postal',
         'IsActive',
         'IRFuserId',
+        'About',
 ];
 
     /**

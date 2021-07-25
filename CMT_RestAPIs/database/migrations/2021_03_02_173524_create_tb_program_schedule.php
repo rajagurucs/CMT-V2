@@ -15,7 +15,7 @@ class CreateTbProgramSchedule extends Migration
     {
         Schema::create('tb_program_schedule', function (Blueprint $table) {
             $table->increments('id')->unique();
-            $table->string('ProgramID');
+            $table->string('ProgramName');
             $table->string('Title');
             $table->integer('UserID')->unsigned()->index();
             $table->string('StartDate');

@@ -28,11 +28,29 @@ Route::post('profile', 'App\Http\Controllers\UserController@getAuthenticatedUser
 
 Route::Post('profileUpdate', 'App\Http\Controllers\UserController@UpdateProfile');
 
-Route::put('changePassword', 'App\Http\Controllers\UserController@changePassword');
+Route::PUT('UpdateProfileInfo', 'App\Http\Controllers\UserController@updateprofileInfo'); 
 
-Route::post('forgot-password', 'App\Http\Controllers\UserController@forgot_password');
+Route::POST('UpdateProfilePic', 'App\Http\Controllers\UserController@UpdateProfilepic');
+
+//// 
+Route::middleware(['api'])->group(function ($router) {
+Route::post('password/email', 'App\Http\Controllers\ForgotPasswordController@forgot');
+Route::post('password/reset', 'App\Http\Controllers\ForgotPasswordController@reset');
+});
+Route::post('req-password-reset', 'App\Http\Controllers\ResetPwdReqController@reqForgotPassword');
+Route::post('update-password', 'App\Http\Controllers\UpdatePwdController@updatePassword');
+////
+Route::PUT('changePassword', 'App\Http\Controllers\UserController@changePassword');
+
+Route::PUT('addAbout', 'App\Http\Controllers\UserController@addAbout');
+
+//Route::post('forgot-password', 'App\Http\Controllers\UserController@forgot_password');
 
 Route::post('recover', 'App\Http\Controllers\UserController@recover');
+
+Route::post('resendlink/{id}', 'App\Http\Controllers\UserController@resendVerification');
+
+//Route::post('forgot_password', 'App\Http\Controllers\UserController@forgot_password');
 
 Route::group(['middleware' => ['jwt.auth']], function() {
     Route::get('logout', 'App\Http\Controllers\UserController@logout');
@@ -56,7 +74,10 @@ Route::PUT('irf_userUpdate', 'App\Http\Controllers\IrfController@irf_userUpdate'
 
 Route::post('irf_programUpdate', 'App\Http\Controllers\IrfController@irf_programUpdate');
 
+//////////////////////JWT TEST
+Route::group(['middleware' => ['jwt.verify']], function() {
 Route::get('getprograms/{id}', 'App\Http\Controllers\IrfController@getprogramdetails');
+});
 
 Route::post('irf_addGoal', 'App\Http\Controllers\IrfController@irf_addGoal');
 
@@ -136,6 +157,9 @@ Route::post('subcribeprogram', 'App\Http\Controllers\FileController@SubscribePro
 
 Route::post('unsubscribeprogram', 'App\Http\Controllers\FileController@UnSubscribeProgram');
 
+Route::get('getuserprograms', 'App\Http\Controllers\FileController@showuserprograms');
+
+ 
 //Profile Picture @ ImageController
 
 Route::post('store-pimg', 'App\Http\Controllers\ProfileImagesController@UploadProImg');

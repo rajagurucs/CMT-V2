@@ -60,7 +60,7 @@ class FileController extends BaseController
 
                 if(is_null($check)) 
                 {
-                return response()->json(['success' => false, 'message' => 'Please Subcribe to the program first '.$userID], 400);
+                return response()->json(['success' => false, 'message' => 'Please Subcribe to the program first '.$userID], 200);
                 }
                 else
                 {   
@@ -84,13 +84,13 @@ class FileController extends BaseController
             } 
             else 
             {
-            return response()->json(['success' => false, 'message' => 'No file uploaded'], 400);
+            return response()->json(['success' => false, 'message' => 'No file uploaded'], 200);
             }    
       
         }
         else
         {
-            return response()->json(['success' => false, 'message' => 'FileName already exist for the Program. Please upload with a different name'], 400);            
+            return response()->json(['success' => false, 'message' => 'FileName already exist for the Program. Please upload with a different name'], 200);            
         }       
       
     }
@@ -116,7 +116,7 @@ class FileController extends BaseController
               return response()->json([
                                       'success'=> false,
                                       'message'=>'User with a particular program does not upload any file'
-                                        ],400);
+                                        ],200);
         }  
         else
         {
@@ -161,7 +161,7 @@ class FileController extends BaseController
             return response()->json([
                                     'success'=> true,
                                     'message'=>'Subscribed to the Program :'.$data,
-                                    ]);
+                                    ], 200);
         }
                                     
         else
@@ -170,7 +170,7 @@ class FileController extends BaseController
             return response()->json([
                                     'success'=> false,
                                     'message'=>'User already subscribed to the program: ' .$data 
-                                    ]); 
+                                    ], 200); 
         }
 
     }
@@ -194,7 +194,7 @@ class FileController extends BaseController
             return response()->json([
                                     'success'=> false,
                                     'message'=>'User already Unsubscribed to the program: ' .$data 
-                                    ]); 
+                                    ], 200); 
         }                                 
         else
         {
@@ -207,13 +207,13 @@ class FileController extends BaseController
             return response()->json([
                                     'success'=> true,
                                     'message'=>'UnSubscribed to the Program :'.$data,
-                                    ]);
+                                    ], 200);
         }       
 
             return response()->json([
                                     'success'=> true,
                                     'message'=>'UnSubcribed to the Program',
-                                    ]);
+                                    ], 200);
 
     }
 
@@ -238,7 +238,7 @@ class FileController extends BaseController
             return response()->json([
                                     'success'=> false,
                                     'message'=>'You are not subscribed to this program',
-                                    'data'=> $search ]);
+                                    'data'=> $search ], 200);
                                             
         }
         else
@@ -256,9 +256,9 @@ class FileController extends BaseController
             $search['FileDetails'] = $data;
 
             return response()->json([
-                                    'success'=> false,
+                                    'success'=> true,
                                     'message'=>'No Files Exist',
-                                    'data'=> $search ]);
+                                    'data'=> $search ], 200);
         } 
         else
         {
@@ -372,7 +372,7 @@ class FileController extends BaseController
             }
         }
 
-        return response()->json(['success' => false, 'message' => 'Unable to delete the document. Please try again later.'], 400);
+        return response()->json(['success' => false, 'message' => 'Unable to delete the document. Please try again later.'], 200);
     }
 
     public function showprograms(Request $request)
@@ -403,5 +403,21 @@ class FileController extends BaseController
                     ->pluck('roleType');
         return response()->json(['success' => true, 'data'=> $userID], 200);
 
+    }
+    public function showuserprograms(Request $request)
+    {
+       $userId = $request->get('userId');
+
+       $result2['Programs'] = DB::table('tb_init_user_program_details')
+
+       ->select('tb_init_user_program_details.programName')
+
+       ->where('userId','=',$userId)
+
+       ->pluck('tb_init_user_program_details.programName')
+
+       ->toarray();           
+
+       return response( $result2);
     }
 }
