@@ -32,11 +32,13 @@ Route::PUT('UpdateProfileInfo', 'App\Http\Controllers\UserController@updateprofi
 
 Route::POST('UpdateProfilePic', 'App\Http\Controllers\UserController@UpdateProfilepic');
 
+Route::get('DisplayAllUsers', 'App\Http\Controllers\UserController@DisplayAllUsers');
+
 //// 
-Route::middleware(['api'])->group(function ($router) {
-Route::post('password/email', 'App\Http\Controllers\ForgotPasswordController@forgot');
-Route::post('password/reset', 'App\Http\Controllers\ForgotPasswordController@reset');
-});
+// Route::middleware(['api'])->group(function ($router) {
+// Route::post('password/email', 'App\Http\Controllers\ForgotPasswordController@forgot');
+// Route::post('password/reset', 'App\Http\Controllers\ForgotPasswordController@reset');
+// });
 Route::post('req-password-reset', 'App\Http\Controllers\ResetPwdReqController@reqForgotPassword');
 Route::post('update-password', 'App\Http\Controllers\UpdatePwdController@updatePassword');
 ////
@@ -48,7 +50,7 @@ Route::PUT('addAbout', 'App\Http\Controllers\UserController@addAbout');
 
 Route::post('recover', 'App\Http\Controllers\UserController@recover');
 
-Route::post('resendlink/{id}', 'App\Http\Controllers\UserController@resendVerification');
+Route::post('resendlink', 'App\Http\Controllers\UserController@resendVerification');
 
 //Route::post('forgot_password', 'App\Http\Controllers\UserController@forgot_password');
 
@@ -95,6 +97,8 @@ Route::get('gethealth_programs/{id}', 'App\Http\Controllers\IrfController@gethea
 
 Route::post('irf_addHealth', 'App\Http\Controllers\IrfController@irf_addHealth');
 
+Route::get('irfprogramlist', 'App\Http\Controllers\FileController@irfprogramlist');
+
 //REPORTS @ ReportController
 
 Route::get('programreport', 'App\Http\Controllers\ReportController@programReport');
@@ -135,9 +139,11 @@ Route::get('show_adcatego', 'App\Http\Controllers\AdminScreenController@show_all
 
 Route::delete('delete_adpgm', 'App\Http\Controllers\AdminScreenController@delete_program');
 
+Route::delete('del_pgID/{data}', 'App\Http\Controllers\AdminScreenController@del_progID'); //New Reqst
+
 Route::get('show_aduser', 'App\Http\Controllers\AdminScreenController@show_alluser');
 
-Route::delete('delete_aduser', 'App\Http\Controllers\AdminScreenController@delete_user');
+Route::post('delete_aduser', 'App\Http\Controllers\AdminScreenController@delete_user');
 
 //File Upload & Download @ FileController
 
@@ -158,6 +164,25 @@ Route::post('subcribeprogram', 'App\Http\Controllers\FileController@SubscribePro
 Route::post('unsubscribeprogram', 'App\Http\Controllers\FileController@UnSubscribeProgram');
 
 Route::get('getuserprograms', 'App\Http\Controllers\FileController@showuserprograms');
+
+Route::get('ProgramUsers', 'App\Http\Controllers\FileController@GetUsersforPrograms');
+
+//Feeds @ FeedsController
+
+Route::post('add_post', 'App\Http\Controllers\FeedsController@add_post');
+
+Route::get('show_allpost', 'App\Http\Controllers\FeedsController@show_allpost');
+
+Route::get('show_alltitle', 'App\Http\Controllers\FeedsController@show_alltitle');
+
+Route::delete('delete_post', 'App\Http\Controllers\FeedsController@delete_post');
+
+Route::put('update_post/{id}', 'App\Http\Controllers\FeedsController@update_post');
+
+Route::post('add_like', 'App\Http\Controllers\FeedsController@add_like');
+
+Route::post('add_dislike', 'App\Http\Controllers\FeedsController@add_dislike');
+
 
  
 //Profile Picture @ ImageController

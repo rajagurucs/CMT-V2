@@ -15,15 +15,12 @@ class CreateTbProgramSchedule extends Migration
     {
         Schema::create('tb_program_schedule', function (Blueprint $table) {
             $table->increments('id')->unique();
-            $table->string('ProgramName');
-            $table->string('Title');
+            $table->string('Category');
+            $table->string('ProgramName');            
+            $table->string('Description');
+            $table->string('FromDate');
+            $table->string('ToDate');
             $table->integer('UserID')->unsigned()->index();
-            $table->string('StartDate');
-            $table->string('StartTime');
-            $table->string('EndDate');
-            $table->string('EndTime');
-            $table->string('Instructor');
-            $table->string('Location');
             $table->timestamps();
 
             $table->foreign('UserID')->references('id')->on('users')->onDelete('cascade');

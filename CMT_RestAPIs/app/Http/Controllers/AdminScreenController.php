@@ -71,13 +71,57 @@ class AdminScreenController extends Controller
     {
         // $cmtprogram = tb_community_programs::findOrFail($programName);
         // $cmtprogram->delete();
-        $program= $request->json()->get('programName');
+        // // $program= $request->json()->get('programName');
         
+        // // $cmtprogram = tb_community_programs::where('programName', $program)
+        // //                                     ->delete();
+        
+        // // return response()->json(['success'=> true,'message'=> 'program Deleted']);
+        
+        // else
+        // return response()->json(['success'=> false,'message'=> 'Program not exists']);
+
+
+        $program= $request->json()->get('programName');
         $cmtprogram = tb_community_programs::where('programName', $program)
-                                            ->delete();
+            ->first();
+        
+        if(!empty($cmtprogram))
+        {
+            DB::table('tb_community_programs')->where('programName', $program)
+            // ->where('password',$password)
+            ->delete();
+         
+               return response()->json(['success'=> true,'message'=> 'program Deleted']);
+        }
+    else
+        {
+             return response()->json(['success'=> false,'message'=> 'Invalid details.!please try again.']);
+        }
+        //
+    }
+
+    public function del_progID($data)
+    {
+      
+      $program = tb_community_programs::where('programName',$data)
+            ->first();
+     
+        //Checking whether the Query returns value             
+        if(is_null($program)) 
+        {
+            return response()->json(['success'=> false,'message'=> 'Invalid details.!please try again.']);
+        }
+
+        else
+        {
+        
+        DB::table('tb_community_programs')->where('programName', $data)            
+            ->delete();    
         
         return response()->json(['success'=> true,'message'=> 'program Deleted']);
-    }
+    }}
+
 
     public function show_alluser()
     {
@@ -104,14 +148,98 @@ class AdminScreenController extends Controller
 
     public function delete_user(Request $request)
     {
-        $username= $request->json()->get('firstName');
         $useremail= $request->json()->get('email');
+
+        $User =  DB::table('users')
+                    ->select('users.email')
+                    ->where('email', $useremail)
+                    ->first();
+        //Checking whether the Query returns value     
+        if(is_null($User)) 
+        {
+            return response()->json(['success'=> false,'message'=> 'User not exists.']);
+        }
+        else
+        {
         
-        $cmtuser = User::where('email', $useremail)
-                        ->where('firstName',$username)
-                            ->delete();
+        $UserData =  DB::table('users')
+                    ->select('users.IRFuserId')
+                    ->where('email', $useremail)
+                    ->value('users.IRFuserId'); 
         
-        return response()->json(['success'=> true,'message'=> 'user Deleted']);
-    }    
+        if(is_null($UserData)) 
+        {
+            // $color = User::find( $useremail );
+            // $color->delete();
+            DB::table('users')->where('email', $useremail)            
+            ->delete(); 
+            return response()->json(['success'=> true,'message'=> 'User deleted.']);
+
+        }
+        else
+        {
+        
+        DB::table('users')->where('email', $useremail)            
+            ->delete(); 
+        DB::table('tb_init_user_details')->where('userId', $UserData)            
+            ->delete();  
+        DB::table('tb_child_details')->where('parentId', $UserData)            
+            ->delete();  
+        DB::table('tb_init_user_program_details')->where('userId', $UserData)            
+            ->delete();
+        DB::table('tb_init_user_health_details')->where('userId', $UserData)            
+            ->delete();            
+        DB::table('tb_init_user_goals')->where('userId', $UserData)            
+            ->delete();             
+        DB::table('tb_init_user_extra_details')->where('userId', $UserData)            
+            ->delete();
+
+            // return response()->json(['success' => true,'data' => $UserData], 200);
+        return response()->json(['success'=> true,'message'=> 'IRF User Deleted']);        
+        
+    }   } }
+
+    public function displayProgram()
+    {
+        // return tb_community_programs::all();
+        $result2['Category'] = DB::table('tb_community_programs')
+                            ->distinct('tb_community_programs.category')
+                            ->pluck('tb_community_programs.category')
+                            ->toarray();     
+
+            foreach($result2['Category'] as $key => $title)
+            {
+            $result[$title] = DB::table('tb_community_programs')
+                ->select('tb_community_programs.programName') 
+                ->where('tb_community_programs.category','=',$title)
+                // ->groupBy('tb_community_programs.programName')
+                ->get();
+            }
+            
+            // return response( $result);
+            return response()->json(['success'=> true,'data'=> $result]);
+    }
+
+    public function display_program()
+    {
+        // return tb_community_programs::all();
+        $result2['Category'] = DB::table('tb_community_programs')
+                            ->distinct('tb_community_programs.category')
+                            ->pluck('tb_community_programs.category')
+                            ->toarray();     
+
+            foreach($result2['Category'] as $key => $title)
+            {
+            $result[$title] = DB::table('tb_community_programs')
+                ->select('tb_community_programs.programName') 
+                ->where('tb_community_programs.category','=',$title)
+                // ->groupBy('tb_community_programs.programName')
+                ->get();
+            }
+            
+            // return response( $result);
+            return response()->json(['success'=> true,'data'=>  $result ]);
+    }
+
 
 }

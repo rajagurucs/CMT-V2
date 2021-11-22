@@ -46,7 +46,7 @@ class ResetPwdReqController extends Controller
         return $isToken->token;
       }
 
-      $token = Str::random(80);;
+      $token = Str::random(06);;
       $this->saveToken($token, $email);
       return $token;
     }

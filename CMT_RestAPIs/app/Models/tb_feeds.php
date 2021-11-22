@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class tb_program_schedule extends Model
+class tb_feeds extends Model
 {
     use HasFactory;
     /**
@@ -14,22 +14,16 @@ class tb_program_schedule extends Model
      * @var array
      */
 
-    protected $table = 'tb_program_schedule';
+    protected $table = 'tb_feeds';
 
     protected $fillable = [
         //Basic Details
-        'Category',
-        'ProgramName',
-        'Description',
-        'UserID',
-        'FromDate',
-        'ToDate',
-        'Recurrence',
-        'NoOfTimes',
-        // 'EndDate',
-        // 'EndTime',
-        // 'Instructor',
-        // 'Location'
+        'Title',
+        'PostContent',
+        'File_Loc',
+        'LikeCount',
+        'DislikeCount',
+        'UserID'
         // 'notes_last_edited_byRole'
         ];
 }

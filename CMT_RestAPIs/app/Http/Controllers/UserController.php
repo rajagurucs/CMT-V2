@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserVerification;
 use App\Models\tb_init_user_details;
 use App\Models\tb_child_details;
 use App\Models\tb_init_user_program_details;
@@ -20,6 +21,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Tymon\JWTAuth\PayloadFactory;
 use Tymon\JWTAuth\JWTManager as JWT;
 use Illuminate\Support\Str;
+
 
 
 use Carbon\Carbon;
@@ -129,17 +131,55 @@ class UserController extends Controller
         ]);
     }
 
-    public function resendVerification($id) 
+    public function resendVerification(Request $request) 
     {
-        $user = User::where('id',$id)->firstOrFail();
-        if ($user->IsActive === 0)
+        $validator = Validator::make($request->json()->all() , [        
+        'email' => 'required'
+            ]);
+    
+    if($validator->fails())
+    {
+        return response()->json($validator->errors()->toJson(), 400);
+    } 
+    $email = $request->json()->get('email');
+       
+	// else
+	// {		
+		$check = User::select('email')
+                            ->where('email',$email)
+                            ->first();
+	if(is_null($check))
+	{
+		return response()->json(['success'=> false,'message'=> 'Your Email id not exisits, please register.']);
+	}
+	else
+	{
+        $chkuser =  DB::table('users')
+                    ->select('users.IsActive')
+                    ->where('email', $email)
+                    ->value('users.IsActive');      
+        
+
+        if ($chkuser == 0)
         {
 
-           $check = DB::table('user_verifications')->where('user_id',$user)->first();
+            $user =  DB::table('users')
+            ->select('users.id')
+            ->where('email', $email)
+            // ->first();
+            ->value('users.id'); 
+
+        $firstName = DB::table('users')
+                    ->select('users.firstName')
+                    ->where('id', $user)
+                    // ->first();
+                    ->value('users.firstName'); 
+
+           $verification_code = DB::table('user_verifications')->where('user_id',$user)->value('user_verifications.token');
 
         $subject = "Please verify your email address. - CMT";
         
-        Mail::send('email.verify', ['firstName' => $firstName, 'verification_code' => $check],
+        Mail::send('email.verify', ['firstName' => $firstName, 'verification_code' => $verification_code],
             function($mail) use ($email, $firstName, $subject){
                 $mail->from(env('MAIL_FROM_ADDRESS'), "CMT_Notification");
                 $mail->to($email, $firstName);
@@ -148,15 +188,24 @@ class UserController extends Controller
 
             //email the user there key
             //$mailer->sendEmailConfirmationTo($user);
-            $message = ('We just sent you the verification link at your email ('.$user->email.') again, please check it.');
+            // $message = ('We just sent you the verification link at your email ('.$user->email.') again, please check it.');
             // return view('auth.message')->with('message',$message);
-            return response()->json(['success'=> true, $message]);
+            return response()->json([
+                'success'=> true,
+                'message'=> 'We just sent you the verification link at your email again, please check it..',
+                // 'm1'=>$chkuser
+            ]);
+            }
+            else 
+            {
+                return response()->json([
+                    'success'=> false, 
+                    'message' => 'Your Email is already active, please contact us at " CMT Admin " if you have any problem.']);
+            }
+            }
         }
-        else 
-        {
-            return response()->json(['success'=> false, 'message' => 'Your Email is already active, please contact us at" " if you have any problem.']);
-        }
-    }
+		// }
+
 
     // protected function registered(Request $request, $user)
     // {
@@ -177,7 +226,7 @@ class UserController extends Controller
 
         if(!is_null($check))
         {
-            $user = User::find($check->user_id);
+            $user = User::find($check->f);
 
             if($user->IsActive == 1){
                 // return response()->json([
@@ -202,7 +251,7 @@ class UserController extends Controller
         }
 
         // return response()->json(['success'=> false, 'error'=> "Verification code is invalid."]);
-        return view('email/verify_message', ['message' => 'Verification code is invalid.']);
+        return view('email/verify_message', ['message' => 'Account already verified..']);
 
     }
 
@@ -830,5 +879,13 @@ class UserController extends Controller
         }
     }
     return \Response::json($arr);
+    }
+
+    public function DisplayAllUsers()
+    {
+        $user = User::select('firstName','lastName','email','profilepic','About')
+                    ->get();
+
+        return response()->json(['success' => true, 'data'=> $user], 200);
     }
 }

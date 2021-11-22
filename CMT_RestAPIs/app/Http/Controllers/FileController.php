@@ -27,26 +27,42 @@ class FileController extends BaseController
         $this->validate($request, [
             'Program_Name' => 'required',
             'document' => 'required|mimes:pdf,png,jpg,jpeg,doc,docx,xls,xlsx|max:9999',
-            'FileName' => 'required',
-            'userID' => 'required',
+            'AssignmentName' => 'required',
+            'role' => 'required',
         ]);
 
         $programName = $request->get('Program_Name');
 
-        $data= $request->get('FileName');
+        $data= $request->get('AssignmentName');
 
-        $userID= $request->get('userID');
+        $role = $request->get('role');
 
-        $checkfilename = tb_program_files::select('File_Loc')
+        if($role == "Participant")
+        {
+
+        $userID= $request->get('email');
+
+        $UID = User::select('IRFuserId')
+        ->where('email',$userID)
+        ->value('IRFuserId');
+
+        $checkAssignmentName = tb_program_files::select('File_Loc')
                                             ->where('Program_Name',$programName)
-                                            ->where('FileName',$data)
+                                            ->where('AssignmentName',$data)
+                                            ->where('userId',$UID)
                                             ->first();   
                                             
-        $usertype =  User::select('roleType')
-                                            ->where('IRFuserId',$userID)
-                                            ->value('roleType');
+        $firstName =  User::select('firstName')
+                                            ->where('email',$userID)
+                                            ->value('firstName');
 
-        if(is_null($checkfilename)) 
+        $lastName =  User::select('lastName')
+                                            ->where('email',$userID)
+                                            ->value('lastName');
+
+        $Name = $firstName.",".$lastName;
+
+        if(is_null($checkAssignmentName)) 
         {
             $base_location = 'user_documents';
 
@@ -55,12 +71,12 @@ class FileController extends BaseController
             {               
                 $check = tb_init_user_program_details::select('program_details_id')
                 ->where('programName',$programName)
-                ->where('userId',$userID)
+                ->where('userId',$UID)
                 ->first();
 
                 if(is_null($check)) 
                 {
-                return response()->json(['success' => false, 'message' => 'Please Subcribe to the program first '.$userID], 200);
+                return response()->json(['success' => false, 'message' => 'Please Subcribe to the program first'], 200);
                 }
                 else
                 {   
@@ -72,9 +88,10 @@ class FileController extends BaseController
     
                 $filedetails = tb_program_files::create([
                     'Program_Name' => $request->get('Program_Name'),
-                    'Sentfrom' => $userID,
-                    'FileName' => $request->get('FileName'),
-                    'UserType' => $usertype,
+                    'Sentfrom' => $Name,
+                    'AssignmentName' => $request->get('AssignmentName'),
+                    'UserType' => $role,
+                    'userID' => $UID,
                     'File_Loc' => $docpath,
                 ]);
     
@@ -90,8 +107,61 @@ class FileController extends BaseController
         }
         else
         {
-            return response()->json(['success' => false, 'message' => 'FileName already exist for the Program. Please upload with a different name'], 200);            
-        }       
+            return response()->json(['success' => false, 'message' => 'Assignment File already uploaded for the Program. Please upload for a different Assignment'], 200);            
+        }
+        
+    }
+    else
+    {
+        $userID = $request->get('email');
+
+        $checkfilename = tb_program_files::select('File_Loc')
+                                            ->where('Program_Name',$programName)
+                                            ->where('AssignmentName',$data)
+                                            ->first(); 
+                                            
+        $firstName =  User::select('firstName')
+                                            ->where('email',$userID)
+                                            ->value('firstName');
+
+        $lastName =  User::select('lastName')
+                                            ->where('email',$userID)
+                                            ->value('lastName');
+
+        $Name = $firstName.",".$lastName;
+        
+        if(is_null($checkfilename)) 
+        {
+            $base_location = 'user_documents';
+
+            // Handle File Upload
+            if($request->hasFile('document'))         
+            {               
+                
+                $documentPath = $request->file('document')->store($base_location, 's3');
+
+                $docpath1 = "https://cmtassignmentfiles.s3.ap-south-1.amazonaws.com/";
+
+                $docpath = $docpath1.$documentPath;
+    
+                $filedetails = tb_program_files::create([
+                    'Program_Name' => $request->get('Program_Name'),
+                    'Sentfrom' => $Name,
+                    'AssignmentName' => $request->get('AssignmentName'),
+                    'UserType' => $role,
+                    'File_Loc' => $docpath,
+                ]);
+    
+                return response()->json(['success' => true, 'message' => 'Document successfully uploaded', 'document' => $filedetails], 200);
+                } 
+      
+        }
+        else
+        {
+            return response()->json(['success' => false, 'message' => 'FileName already exist for the Assignment. Please upload with a different Assignment Name'], 200);            
+        }
+
+    }
       
     }
 
@@ -100,14 +170,26 @@ class FileController extends BaseController
 
         $programName = $request->json()->get('Program_Name');
 
-        $userID = $request->json()->get('userID');
+        $Name1 = $request->json()->get('sentfrom');
 
-        $FileName = $request->json()->get('FileName');
+        $email = $request->json()->get('email');
+
+        $AssignmentName = $request->json()->get('AssignmentName'); 
+
+        $firstName =  User::select('firstName')
+        ->where('email',$email)
+        ->value('firstName');
+
+        $lastName =  User::select('lastName')
+        ->where('email',$email)
+        ->value('lastName');
+
+        $Name = $firstName.",".$lastName;
 
         $search_userprogram = tb_program_files::select('File_Loc')
                                             ->where('Program_Name',$programName)
-                                            ->where('Sentfrom',$userID)
-                                            ->where('FileName',$FileName)
+                                            ->where('Sentfrom',$Name1)
+                                            ->where('AssignmentName',$AssignmentName)
                                             ->first();
        
         //Checking whether the User Query returns value             
@@ -115,19 +197,19 @@ class FileController extends BaseController
         {
               return response()->json([
                                       'success'=> false,
-                                      'message'=>'User with a particular program does not upload any file'
+                                      'message'=> $Name1,
                                         ],200);
         }  
         else
         {
             $user=tb_program_files::where('Program_Name',$programName)
-                                    ->where('Sentfrom',$userID)
-                                    ->where('FileName',$FileName)
+                                    ->where('Sentfrom',$Name1)
+                                    ->where('AssignmentName',$AssignmentName)
                                     ->update([
                                             'usergrade' => $request->json()->get('usergrade'),
                                             'agentcomments' => $request->json()->get('agentcomments'),
-                                            'Sentfrom' => $userID,
-                                            'Program_Name' => $programName
+                                            'UpdatedAgent' => $Name,
+                                            'Program_Name' => $programName,
                                             ]);
 
             return response()->json([
@@ -221,70 +303,58 @@ class FileController extends BaseController
     {
         $data = $request->get('Program_Name');
 
-        $userID = $request->get('userID');
+        $email = $request->get('email');
 
-        $check = tb_init_user_program_details::select('program_details_id')
-                                                ->where('userId',$userID)
+        $role = User::select('roleType')
+        ->where('email',$email)
+        ->value('roleType');
+
+        $userId = User::select('IRFuserId')
+                ->where('email',$email)
+                ->value('IRFuserId');
+
+        if($role == "Participant")
+            {
+
+                $check = tb_init_user_program_details::select('program_details_id')
+                                                ->where('userId',$userId)
                                                 ->where('programName',$data)
                                                 ->first();
         
-        if(is_null($check))
-        {
-            $check = "UnSubscribed";
-
-            $search['UserProgramStatus'] = $check;
-            $search['FileDetails'] = NULL;
+                if(is_null($check))
+                    {
+                        $check = "UnSubscribed";
+                        $search['UserProgramStatus'] = $check;
+                        $search['MyFiles'] = [];
+                        $search['Assignments'] = [];
                                     
-            return response()->json([
+                        return response()->json([
                                     'success'=> false,
                                     'message'=>'You are not subscribed to this program',
-                                    'data'=> $search ], 200);
-                                            
-        }
-        else
-        {
-            $check = "Subscribed";
-        }
-
-        $search_userprogram = tb_program_files::select('File_Loc')->where('Program_Name',$data)
-                                        ->first();                                
-       
-          //Checking whether the User Query returns value             
-        if(is_null($search_userprogram)) 
-        {           
-            $search['UserProgramStatus'] = $check;
-            $search['FileDetails'] = $data;
-
-            return response()->json([
-                                    'success'=> true,
-                                    'message'=>'No Files Exist',
-                                    'data'=> $search ], 200);
-        } 
-        else
-        {
-            $usertype =  User::select('roleType')
-                                ->where('IRFuserId',$userID)
-                                ->pluck('roleType');
-
-            if('Participant' == $usertype)
-
-            {
-                $user=tb_program_files::select('Program_Name','Sentfrom','FileName','File_Loc','usergrade','agentcomments')
+                                    'data'=> $search ], 200);                        
+                    }
+                else
+                    {
+                        $check = "Subscribed";
+                    }
+        
+                $Agentfile=tb_program_files::select('Program_Name','Sentfrom','AssignmentName','File_Loc')
                                                 ->where('Program_Name',$data)
                                                 ->where('UserType','<>','Participant')
                                                 ->get();
 
-                $user2=tb_program_files::select('Program_Name','Sentfrom','FileName','File_Loc','usergrade','agentcomments')
+                $userfile=tb_program_files::select('Program_Name','UpdatedAgent','AssignmentName','usergrade','agentcomments','File_Loc')
                                                 ->where('Program_Name',$data)
-                                                ->where('Sentfrom','=',$userID)
+                                                ->where('UserID',$userId)
                                                 ->get();
                         
-                $collection = collect($user);
-                $merged     = $collection->merge($user2);
-                $result   = $merged->all();
+             //   $collection = collect($user);
+              //  $merged     = $collection->merge($user2);
+              //  $result   = $merged->all();
                         
                 $search['UserProgramStatus'] = $check;
-                $search['FileDetails'] = $result;
+                $search['MyFiles'] = $userfile;
+                $search['Assignments'] = $Agentfile;
                                                
                 return response()->json([
                                     'success'=> true,
@@ -293,13 +363,18 @@ class FileController extends BaseController
             }
             else
             {
-                $user=tb_program_files::select('Program_Name','Sentfrom','FileName','File_Loc','usergrade','agentcomments')
-                                                ->where('Program_Name',$data)                        
-                                                ->get();
+                $Agentfile=tb_program_files::select('Program_Name','Sentfrom','AssignmentName','File_Loc')
+                ->where('Program_Name',$data)
+                ->where('UserType','<>','Participant')
+                ->get();
 
+                $Participantfile=tb_program_files::select('Program_Name','Sentfrom','AssignmentName','usergrade','agentcomments','File_Loc')
+                ->where('Program_Name',$data)
+                ->where('UserType','Participant')
+                ->get();
 
-                $search['UserProgramStatus'] = $check;
-                $search['FileDetails'] = $user;
+                $search['Assignments'] = $Agentfile;
+                $search['ParticipantFiles'] = $Participantfile;
                        
                 return response()->json([
                                     'success'=> true,
@@ -307,12 +382,12 @@ class FileController extends BaseController
 
 
             }
-        }
+        
     }
 
     public function deleteFile(Request $request)
     {
-        $FileName= $request->json()->get('FileName');
+        $FileName= $request->json()->get('AssignmentName');
 
         $programName = $request->json()->get('Program_Name');
 
@@ -325,9 +400,9 @@ class FileController extends BaseController
         if('Participant' == $usertype)
         {
             $document = DB::table('tb_program_files')->select('File_Loc')
-                                            ->where('FileName', $FileName)
+                                            ->where('AssignmentName', $FileName)
                                             ->where('Program_Name', $programName)
-                                            -where('sentfrom',$userID)
+                                            -where('UserID',$userID)
                                             ->get();
             if(empty($document))
             {
@@ -420,4 +495,90 @@ class FileController extends BaseController
 
        return response( $result2);
     }
+
+    public function GetUsersforPrograms(Request $request)
+    {
+        $programname = $request->get('ProgramName');              
+
+        $result = DB::table('tb_init_user_details')
+
+                ->join('tb_init_user_program_details','tb_init_user_details.userId','=','tb_init_user_program_details.userId') 
+
+                ->select('tb_init_user_details.userId','tb_init_user_details.firstName','tb_init_user_details.lastName','tb_init_user_details.email','tb_init_user_details.phoneCell') 
+
+                ->where('tb_init_user_program_details.programName',$programname)
+
+                ->groupBy('tb_init_user_details.userId')
+
+                ->get();  
+
+            $search['programUsers'] = $result;
+
+        return response()->json(['success' => true, 'data'=> $search], 200);
+    }
+
+    
+    public function irfprogramlist(Request $request)
+
+    {
+
+ 
+
+        $result2['Category'] = DB::table('tb_community_programs')
+
+        ->distinct('tb_community_programs.category')
+
+        ->pluck('tb_community_programs.category')
+
+        ->toarray();       
+
+ 
+
+        foreach($result2['Category'] as $key => $title)
+
+            {      
+
+                $result[$title] = DB::table('tb_community_programs')
+
+                                ->select('tb_community_programs.programName') 
+
+                                ->where('tb_community_programs.category','=',$title)
+
+                                ->pluck('tb_community_programs.programName');
+
+            } 
+
+            foreach($result as $key => $title)
+
+               {
+
+                    $a=null;
+
+                    $temp1=null;
+
+                    $temp=null;
+
+                   // $currentItem[$title] = array();
+
+                    foreach($title as $key2 => $val)
+
+                        {
+
+                            $temp1 = str_replace(' ', '', $val);
+
+                            $temp2 = str_replace(' ', '', $key);
+
+                            $temp = $temp2.$temp1;
+
+                            $a[$temp] = ['isChecked' => false , 'value' => $val];                                  
+
+                        }
+
+                       $programs[$key]= (array) $a;
+
+                }
+
+            return response()->json(['success' => true, 'Programs'=> $programs], 200);
+
+        }
 }
